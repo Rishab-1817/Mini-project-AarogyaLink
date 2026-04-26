@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MediGear - Medicine Management - AarogyaLink</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --arogya-blue: #1e40af;
+            --arogya-light-blue: #3b82f6;
+            --arogya-bg-light: #f9fafb;
+            --arogya-extra-light: #eff6ff;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, var(--arogya-extra-light) 0%, #f0f9ff 100%);
+            min-height: 100vh;
+        }
+
+        .medicine-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        .hero-section {
+            text-align: center;
+            margin-bottom: 50px;
+            background: white;
+            border-radius: 20px;
+            padding: 50px 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(59, 130, 246, 0.1);
+        }
+
+        .hero-section h1 {
+            font-size: 3rem;
+            font-weight: 800;
+            color: var(--arogya-blue);
+            margin-bottom: 15px;
+        }
+
+        .hero-section p {
+            font-size: 1.2rem;
+            color: #6b7280;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-bottom: 50px;
+        }
+
+        .feature-card {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(59, 130, 246, 0.1);
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        .feature-icon {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            color: var(--arogya-light-blue);
+        }
+
+        .feature-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--arogya-blue);
+            margin-bottom: 15px;
+        }
+
+        .feature-description {
+            color: #6b7280;
+            line-height: 1.6;
+        }
+
+        .cta-button {
+            display: inline-block;
+            background: linear-gradient(135deg, var(--arogya-light-blue), #60a5fa);
+            color: white;
+            padding: 15px 30px;
+            border-radius: 10px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            margin-top: 15px;
+        }
+
+        .cta-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(59, 130, 246, 0.3);
+        }
+
+        /* Chatbot Styles */
+        :root {
+            --vapi-primary-color: #1e40af;
+            --vapi-secondary-color: #3b82f6;
+        }
+
+        .vapi-widget {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+
+        .vapi-widget-button {
+            background: linear-gradient(135deg, var(--vapi-primary-color), var(--vapi-secondary-color));
+            border: none;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(30, 64, 175, 0.3);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .vapi-widget-button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 16px rgba(30, 64, 175, 0.4);
+        }
+
+        .vapi-widget-button i {
+            color: white;
+            font-size: 24px;
+        }
+
+        .vapi-widget-iframe {
+            border: none;
+            border-radius: 12px;
+            width: 350px;
+            height: 600px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        @media (max-width: 768px) {
+            .vapi-widget-iframe {
+                width: calc(100vw - 40px);
+                height: calc(100vh - 120px);
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="sticky top-0 bg-white shadow-md z-[1000]">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                
+                <div class="flex items-center">
+                    <a href="index.html" class="flex items-center text-2xl font-extrabold text-arogya-blue hover:text-arogya-light-blue transition duration-150" style="text-decoration: none !important;">
+                        <svg class="h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0zM12 4v2m-3 7h6m-3-3v6" />
+                        </svg>
+                        AarogyaLink
+                    </a>
+                </div>
+
+                <div class="hidden md:flex items-center space-x-1">
+                    <a href="index.html" class="text-gray-600 hover:text-arogya-light-blue px-3 py-2 rounded-md text-sm font-semibold transition duration-150" style="text-decoration: none !important;">Home</a>
+                    <a href="index.html#why-choose" class="text-gray-600 hover:text-arogya-light-blue px-3 py-2 rounded-md text-sm font-semibold transition duration-150" style="text-decoration: none !important;">About</a>
+                    
+                    <div class="relative h-full flex items-center nav-dropdown-container">
+                        <button id="dropdownButton" class="nav-active px-3 py-2 rounded-md text-sm flex items-center bg-transparent border-0 outline-none cursor-pointer text-gray-600 hover:text-arogya-light-blue font-semibold">
+                            Services
+                            <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </button>
+
+                        <div id="dropdownMenu" class="nav-dropdown-menu absolute left-0 w-64 bg-white border border-gray-100 rounded-xl shadow-2xl z-[1100]" style="top: 100%; display: none; margin-top: -5px;">
+                            <div class="py-2 px-1">
+                                <a href="services.html" class="block px-4 py-2.5 text-sm text-arogya-blue bg-arogya-extra-light font-bold rounded-lg" style="text-decoration: none !important;">🏥 All Services</a>
+                                <div class="border-t border-gray-100 my-1 mx-2"></div>
+                                <a href="aisymptomhealth.html" class="block px-4 py-2.5 text-sm text-gray-700 hover:bg-arogya-extra-light hover:text-arogya-blue rounded-lg" style="text-decoration: none !important;">🤖 AI Symptom Checker</a>
+                                <a href="telemedicine-map.html" class="block px-4 py-2.5 text-sm text-gray-700 hover:bg-arogya-extra-light hover:text-arogya-blue rounded-lg" style="text-decoration: none !important;">📍 Nearest Care Map</a>
+                                <a href="consultation.html" class="block px-4 py-2.5 text-sm text-gray-700 hover:bg-arogya-extra-light hover:text-arogya-blue rounded-lg" style="text-decoration: none !important;">📅 Book Consultation</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <a href="healthed.html" class="text-gray-600 hover:text-arogya-light-blue px-3 py-2 rounded-md text-sm font-semibold transition duration-150" style="text-decoration: none !important;">HealthEd</a>
+                    <a href="medicine-management.html" class="text-arogya-blue bg-arogya-blue/10 px-3 py-2 rounded-md text-sm font-semibold transition duration-150" style="text-decoration: none !important;">MediGear</a>
+                    <a href="contact.html" class="text-gray-600 hover:text-arogya-light-blue px-3 py-2 rounded-md text-sm font-semibold transition duration-150" style="text-decoration: none !important;">Contact Us</a>
+                </div>
+
+                <div class="flex items-center space-x-4">
+                    <button onclick="handleEmergency()" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-full shadow-md transition duration-150 transform hover:scale-105 text-sm border-0">
+                        Emergency
+                    </button>
+                    <a href="dashboard.html" class="p-2 rounded-full text-arogya-blue hover:bg-arogya-blue/10">
+                        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                        </svg>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="bg-arogya-extra-light py-3">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <nav class="flex" aria-label="Breadcrumb">
+                <ol class="flex items-center space-x-2">
+                    <li>
+                        <a href="index.html" class="text-arogya-blue hover:text-arogya-light-blue transition duration-150">
+                            <i class="fas fa-home mr-1"></i>Home
+                        </a>
+                    </li>
+                    <li class="flex items-center">
+                        <svg class="flex-shrink-0 h-4 w-4 text-gray-400 mx-2" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"/>
+                        </svg>
+                        <span class="text-gray-600 font-medium">MediGear - Medicine Management</span>
+                    </li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <div class="medicine-container">
+        <div class="hero-section">
+            <h1><i class="fas fa-pills text-arogya-light-blue mr-3"></i>MediGear</h1>
+            <p>Complete medication management system to ensure you never miss a dose. Track, monitor, and manage all your medicines in one place.</p>
+        </div>
+
+        <div class="features-grid">
+            <a href="add-medicine.html" style="text-decoration: none; color: inherit;">
+                <div class="feature-card">
+                    <div class="feature-icon" style="color: #3b82f6;"><i class="fas fa-plus-circle"></i></div>
+                    <h3 class="feature-title">Add Medicine</h3>
+                    <p class="feature-description">Register your medicines with timing, dosage, and duration for personalized tracking.</p>
+                    <span class="cta-button">Add Medicine</span>
+                </div>
+            </a>
+
+            <a href="medication-tracker.html" style="text-decoration: none; color: inherit;">
+                <div class="feature-card">
+                    <div class="feature-icon" style="color: #10b981;"><i class="fas fa-calendar-check"></i></div>
+                    <h3 class="feature-title">Track Medicine</h3>
+                    <p class="feature-description">Monitor your medication adherence with calendar-based tracking and statistics.</p>
+                    <span class="cta-button">View Tracker</span>
+                </div>
+            </a>
+
+            <a href="medicine-timer.html" style="text-decoration: none; color: inherit;">
+                <div class="feature-card">
+                    <div class="feature-icon" style="color: #f59e0b;"><i class="fas fa-hourglass-start"></i></div>
+                    <h3 class="feature-title">Medicine Timer</h3>
+                    <p class="feature-description">Set countdown timers for your medications with notifications and sound alerts.</p>
+                    <span class="cta-button">Set Timer</span>
+                </div>
+            </a>
+
+            <a href="digital-prescriptions.html" style="text-decoration: none; color: inherit;">
+                <div class="feature-card">
+                    <div class="feature-icon" style="color: #8b5cf6;"><i class="fas fa-file-prescription"></i></div>
+                    <h3 class="feature-title">Digital Prescriptions</h3>
+                    <p class="feature-description">Scan and store your prescriptions digitally with automatic medicine extraction.</p>
+                    <span class="cta-button">Scan Prescription</span>
+                </div>
+            </a>
+        </div>
+
+        <div class="hero-section">
+            <h2 style="font-size: 2rem; margin-bottom: 20px;"><i class="fas fa-chart-line text-arogya-light-blue mr-2"></i>Your Medication Health</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
+                <div class="text-center">
+                    <div class="text-3xl font-bold text-arogya-blue" id="totalMedicines">0</div>
+                    <div class="text-gray-600">Medicines Added</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-3xl font-bold text-green-600" id="takenToday">0</div>
+                    <div class="text-gray-600">Taken Today</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-3xl font-bold text-orange-600" id="upcomingDoses">0</div>
+                    <div class="text-gray-600">Upcoming Today</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // DROP DOWN LOGIC
+        document.addEventListener('DOMContentLoaded', () => {
+            const dropdownButton = document.getElementById('dropdownButton');
+            const dropdownMenu = document.getElementById('dropdownMenu');
+
+            if (dropdownButton && dropdownMenu) {
+                dropdownButton.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const isVisible = dropdownMenu.style.display === 'block';
+                    dropdownMenu.style.display = isVisible ? 'none' : 'block';
+                });
+
+                // Close when clicking outside
+                window.addEventListener('click', () => {
+                    dropdownMenu.style.display = 'none';
+                });
+            }
+        });
+
+        function handleEmergency() {
+            const userConfirmed = confirm('Calling emergency services (102). Click OK to call.');
+            if (userConfirmed) {
+                window.location.href = 'tel:102';
+            }
+        }
+
+        // Load medication statistics
+        function loadMedicationStats() {
+            const medicines = JSON.parse(localStorage.getItem('medicines') || '[]');
+            const tracking = JSON.parse(localStorage.getItem('medicineTracking') || '{}');
+
+            document.getElementById('totalMedicines').textContent = medicines.length;
+
+            const todayKey = new Date().toISOString().split('T')[0];
+            let takenToday = 0;
+
+            if (tracking[todayKey]) {
+                takenToday = Object.values(tracking[todayKey]).filter(status => status === 'taken').length;
+            }
+            document.getElementById('takenToday').textContent = takenToday;
+
+            let upcomingDoses = 0;
+            const now = new Date();
+            const currentTime = now.getHours() * 60 + now.getMinutes();
+
+            medicines.forEach(medicine => {
+                if (medicine.rawTimes) {
+                    medicine.rawTimes.forEach(time => {
+                        const [hours, minutes] = time.split(':');
+                        const doseTime = parseInt(hours) * 60 + parseInt(minutes);
+                        if (doseTime > currentTime) {
+                            upcomingDoses++;
+                        }
+                    });
+                }
+            });
+            document.getElementById('upcomingDoses').textContent = upcomingDoses;
+        }
+
+        document.addEventListener('DOMContentLoaded', loadMedicationStats);
+    </script>
+
+    <script src="https://cdn.vapi.ai/web-sdk.js"></script>
+    <script>
+        (function(d, t) {
+            var v = d.createElement(t), s = d.getElementsByTagName(t)[0];
+            v.onload = function() {
+                try {
+                    window.vapiInstance = window.vapiSDK.run({
+                        apiKey: "3f316145-e21e-4681-9bf0-7479538e1e33",
+                        assistant: "ae3149bf-85fd-4e58-898c-6ba1cd44241b",
+                        config: {
+                            position: "right",
+                            offset: "20px",
+                            width: "350px",
+                            height: "600px",
+                            idleTime: 30000,
+                            widget: {
+                                color: "#1e40af",
+                                text: "Chat with DoctorBot",
+                                icon: "https://cdn.vapi.ai/widget-icon.png"
+                            }
+                        }
+                    });
+                } catch (error) {
+                    console.error("Vapi widget failed to load:", error);
+                    const fallbackDiv = document.createElement('div');
+                    fallbackDiv.className = 'vapi-widget';
+                    fallbackDiv.innerHTML = `
+                        <iframe
+                            src="https://vapi.ai/widget?assistant=ae3149bf-85fd-4e58-898c-6ba1cd44241b"
+                            class="vapi-widget-iframe"
+                            title="DoctorBot Chat"
+                        ></iframe>
+                    `;
+                    document.body.appendChild(fallbackDiv);
+                }
+            };
+            v.src = "https://cdn.vapi.ai/web-sdk.js";
+            v.defer = true;
+            s.parentNode.insertBefore(v, s);
+        })(document, "script");
+    </script>
+</body>
+</html>

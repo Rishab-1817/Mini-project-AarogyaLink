@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Medicines Quiz - AarogyaLink</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://kit.fontawesome.com/a2e0c3c6f0.js" crossorigin="anonymous"></script>
+  <style>
+    body {
+    font-family: Arial, sans-serif;
+    background: url('med.png') repeat center center fixed;
+    background-size: cover;
+    margin: 0;
+    padding: 0;
+    }
+
+    .quiz-container {
+    max-width: 800px;
+    margin: 60px auto;
+    padding: 25px;
+    border-radius: 15px;
+    background: rgba(255, 255, 255, 0.9); /* semi-transparent white so bg shows */
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    }
+    h2 { text-align:center; margin-bottom: 20px; }
+    .banner { text-align:center; margin-bottom:20px; }
+    .banner img { max-width:120px; }
+    .progress-bar { width:100%; background:#e6e6e6; border-radius:8px; overflow:hidden; margin:15px 0 25px; }
+    .progress { height:18px; width:0; background:#28a745; text-align:center; color:white; font-size:0.8rem; transition: width 0.4s ease; }
+    .question { margin: 20px 0; padding: 15px; background: white; border-radius: 10px; border: 1px solid #ddd; }
+    .question h4 { margin-bottom: 10px; }
+    .option { display:block; margin: 5px 0; }
+    .btn-submit { display:block; margin: 20px auto; padding: 10px 20px; border:none; border-radius: 6px; background:#007bff; color:white; cursor:pointer; font-size:1rem; }
+    .correct { background: #d4edda; }
+    .wrong { background: #f8d7da; }
+    .explanation { font-size:0.9rem; margin-top:5px; color:#333; }
+    #result { text-align:center; margin-top:20px; font-size:1.2rem; }
+    .badge { font-size: 1.5rem; margin-top: 10px; }
+  </style>
+</head>
+<body>
+
+  <header class="header">
+    <div class="container nav">
+      <div class="logo"><i class="fas fa-pills"></i> AarogyaLink</div>
+      <div class="nav-controls">
+        <a href="quiz.html" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Back</a>
+      </div>
+    </div>
+  </header>
+
+  <div class="quiz-container">
+    <div class="banner">
+      <img src="https://cdn-icons-png.flaticon.com/512/2966/2966808.png" alt="Medicines Icon">
+      <h2>💊 Common Knowledge About Medicines Quiz</h2>
+    </div>
+
+    <div class="progress-bar">
+      <div id="progress" class="progress">0%</div>
+    </div>
+
+    <form id="quizForm"></form>
+    <button class="btn-submit" onclick="submitQuiz(event)">Submit Quiz</button>
+    <div id="result"></div>
+  </div>
+
+  <script>
+    const quizData = [
+      { question: "Q1. Paracetamol is used to treat?", options: ["Pain and fever", "Infection", "High blood pressure", "Diabetes"], correct: 0, explanation: "Paracetamol reduces pain and fever." },
+      { question: "Q2. Antibiotics kill?", options: ["Viruses", "Bacteria", "Fungi", "None"], correct: 1, explanation: "Antibiotics target bacteria, not viruses." },
+      { question: "Q3. Overuse of antibiotics can cause?", options: ["Resistance", "Better health", "No effect", "Hair growth"], correct: 0, explanation: "Overuse can lead to antibiotic resistance." },
+      { question: "Q4. Medicines should be stored?", options: ["In sunlight", "In original container, dry place", "Near heat", "Mixed with food"], correct: 1, explanation: "Proper storage preserves efficacy." },
+      { question: "Q5. Painkillers should be?", options: ["Taken only as needed", "Taken in excess", "Never taken", "Given to everyone"], correct: 0, explanation: "Only use as per recommended dosage." },
+      { question: "Q6. Prescription medicines can be?", options: ["Shared freely", "Taken only by prescription", "Given to children", "Mixed with water"], correct: 1, explanation: "They should only be taken under doctor guidance." },
+      { question: "Q7. Vaccines prevent?", options: ["All diseases", "Specific diseases", "Pain", "Cold only"], correct: 1, explanation: "Vaccines protect against specific diseases." },
+      { question: "Q8. Expired medicines should be?", options: ["Used anyway", "Disposed safely", "Stored forever", "Mixed in water"], correct: 1, explanation: "Expired medicines can be harmful." },
+      { question: "Q9. OTC stands for?", options: ["Over The Counter", "Only The Cure", "Over The Clinic", "On The Checkup"], correct: 0, explanation: "OTC means over-the-counter medicines." },
+      { question: "Q10. Always read the medicine label?", options: ["Yes", "No", "Optional", "Sometimes"], correct: 0, explanation: "Label provides correct dosage and instructions." }
+    ];
+
+    const quizForm = document.getElementById("quizForm");
+    const progressBar = document.getElementById("progress");
+
+    quizData.forEach((q, index) => {
+      const questionBlock = document.createElement("div");
+      questionBlock.classList.add("question");
+      questionBlock.innerHTML = `
+        <h4>${q.question}</h4>
+        ${q.options.map((opt, i) => `
+          <label class="option">
+            <input type="radio" name="q${index}" value="${i}" onchange="updateProgress()"> ${opt}
+          </label>
+        `).join("")}
+        <div id="exp${index}" class="explanation" style="display:none;"></div>
+      `;
+      quizForm.appendChild(questionBlock);
+    });
+
+    function updateProgress() {
+      const answered = quizData.filter((_, i) => document.querySelector(`input[name="q${i}"]:checked`)).length;
+      const total = quizData.length;
+      const percent = Math.round((answered/total)*100);
+      progressBar.style.width = percent + "%";
+      progressBar.textContent = percent + "%";
+    }
+
+    function submitQuiz(e) {
+      e.preventDefault();
+      let score = 0;
+      quizData.forEach((q, i) => {
+        const selected = document.querySelector(`input[name="q${i}"]:checked`);
+        const explanation = document.getElementById(`exp${i}`);
+        if (selected) {
+          if (parseInt(selected.value) === q.correct) {
+            score++;
+            selected.parentElement.classList.add("correct");
+            explanation.innerHTML = "✅ Correct! " + q.explanation;
+          } else {
+            selected.parentElement.classList.add("wrong");
+            explanation.innerHTML = "❌ Wrong! " + q.explanation;
+          }
+        } else {
+          explanation.innerHTML = "⚠️ Not Attempted. " + q.explanation;
+        }
+        explanation.style.display = "block";
+      });
+
+      let badge = "";
+      if(score >= 8) badge = "🥇 Gold Health Hero!";
+      else if(score >= 5) badge = "🥈 Silver Health Learner!";
+      else badge = "🥉 Bronze - Keep practicing!";
+
+      document.getElementById("result").innerHTML = 
+        `<strong>Your Score: ${score}/${quizData.length}</strong><br>
+         <div class="badge">${badge}</div>`;
+    }
+  </script>
+
+</body>
+</html>

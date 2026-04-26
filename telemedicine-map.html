@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Telemedicine - Nearest Care Map</title>
+
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css" />
+  <link rel="stylesheet" href="telemedicine-map.css" />
+
+  <style>
+    /* Chatbot Styles */
+    :root {
+        --vapi-primary-color: #1e40af;
+        --vapi-secondary-color: #3b82f6;
+    }
+
+    .vapi-widget {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        z-index: 1000;
+    }
+
+    .vapi-widget-button {
+        background: linear-gradient(135deg, var(--vapi-primary-color), var(--vapi-secondary-color));
+        border: none;
+        border-radius: 50%;
+        width: 60px;
+        height: 60px;
+        cursor: pointer;
+        box-shadow: 0 4px 12px rgba(30, 64, 175, 0.3);
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .vapi-widget-button:hover {
+        transform: scale(1.05);
+        box-shadow: 0 6px 16px rgba(30, 64, 175, 0.4);
+    }
+
+    .vapi-widget-button i {
+        color: white;
+        font-size: 24px;
+    }
+
+    .vapi-widget-iframe {
+        border: none;
+        border-radius: 12px;
+        width: 350px;
+        height: 600px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    }
+
+    @media (max-width: 768px) {
+        .vapi-widget-iframe {
+            width: calc(100vw - 40px);
+            height: calc(100vh - 120px);
+        }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div style="margin-bottom: 0.6rem;">
+      <a href="services.html" style="display:inline-block; color:#2563eb; text-decoration:none; font-weight:600;">← Back to Services</a>
+    </div>
+    <h1>Nearest Hospitals & Pharmacies</h1>
+
+    <div class="controls">
+      <button id="locateBtn">📍 Find My Location</button>
+      <button id="findBtn">🏥 Find Nearby Hospitals + Pharmacies</button>
+      <label for="radiusSelect" class="label-inline">Radius</label>
+      <select id="radiusSelect" title="Search radius">
+        <option value="3000">3 km</option>
+        <option value="5000" selected>5 km</option>
+        <option value="10000">10 km</option>
+        <option value="20000">20 km</option>
+      </select>
+
+      <label for="placeType" class="label-inline">Show</label>
+      <select id="placeType" title="Place type filter">
+        <option value="hospital">Hospital</option>
+        <option value="pharmacy">Pharmacy</option>
+        <option value="hospital,pharmacy" selected>Both</option>
+      </select>
+
+      <label for="transportMode" class="label-inline">Mode</label>
+      <select id="transportMode" title="Transport mode for routing">
+        <option value="car">Driving</option>
+        <option value="bike">Cycling</option>
+        <option value="foot">Walking</option>
+      </select>
+
+      <button id="clearBtn">🗑 Clear Markers + Route</button>
+      <small id="statusText">Status: waiting</small>
+    </div>
+
+    <div id="mapid"></div>
+
+    <div class="info">
+      <h3>Instructions</h3>
+      <ol>
+        <li>Click “Find My Location”</li>
+        <li>Click “Find Nearby…”</li>
+        <li>Click a place popup ➜ “Route here” to show route, distance, and ETA</li>
+      </ol>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"></script>
+  <script src="telemedicine-map.js"></script>
+
+  <!-- Chatbot Script -->
+  <script src="https://cdn.vapi.ai/web-sdk.js"></script>
+  <script>
+    (function(d, t) {
+        var v = d.createElement(t), s = d.getElementsByTagName(t)[0];
+        v.onload = function() {
+            try {
+                window.vapiInstance = window.vapiSDK.run({
+                    apiKey: "3f316145-e21e-4681-9bf0-7479538e1e33",
+                    assistant: "ae3149bf-85fd-4e58-898c-6ba1cd44241b",
+                    config: {
+                        position: "right",
+                        offset: "20px",
+                        width: "350px",
+                        height: "600px",
+                        idleTime: 30000,
+                        widget: {
+                            color: "#1e40af",
+                            text: "Chat with DoctorBot",
+                            icon: "https://cdn.vapi.ai/widget-icon.png"
+                        }
+                    }
+                });
+            } catch (error) {
+                console.error("Vapi widget failed to load:", error);
+                // Fallback: Create a simple iframe
+                const fallbackDiv = document.createElement('div');
+                fallbackDiv.className = 'vapi-widget';
+                fallbackDiv.innerHTML = `
+                    <iframe
+                        src="https://vapi.ai/widget?assistant=ae3149bf-85fd-4e58-898c-6ba1cd44241b"
+                        class="vapi-widget-iframe"
+                        title="DoctorBot Chat"
+                    ></iframe>
+                `;
+                document.body.appendChild(fallbackDiv);
+            }
+        };
+        v.src = "https://cdn.vapi.ai/web-sdk.js";
+        v.defer = true;
+        s.parentNode.insertBefore(v, s);
+    })(document, "script");
+  </script>
+</body>
+</html>

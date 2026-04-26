@@ -1,0 +1,1022 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Medication Tracker - AarogyaLink</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --arogya-blue: #1e40af;
+            --arogya-light-blue: #3b82f6;
+            --arogya-bg-light: #f9fafb;
+            --arogya-extra-light: #eff6ff;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, var(--arogya-extra-light) 0%, #f0f9ff 100%);
+            min-height: 100vh;
+        }
+
+        .tracker-container {
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            gap: 30px;
+            padding: 40px 20px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        @media (max-width: 1024px) {
+            .tracker-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .calendar-section {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(59, 130, 246, 0.1);
+        }
+
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .month-navigation {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .nav-btn {
+            background: linear-gradient(135deg, var(--arogya-light-blue), #60a5fa);
+            color: white;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .nav-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 5px 15px rgba(59, 130, 246, 0.3);
+        }
+
+        .current-month {
+            font-weight: 700;
+            font-size: 1.3rem;
+            color: var(--arogya-blue);
+            min-width: 180px;
+            text-align: center;
+        }
+
+        .page-header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 0 20px;
+        }
+
+        .page-header h2 {
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--arogya-blue);
+            margin-bottom: 10px;
+        }
+
+        .page-header p {
+            color: #6b7280;
+            font-size: 1.1rem;
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 8px;
+            margin-bottom: 30px;
+        }
+
+        .calendar-day-header {
+            text-align: center;
+            font-weight: 700;
+            color: var(--arogya-blue);
+            padding: 10px;
+            font-size: 0.9rem;
+        }
+
+        .calendar-day {
+            aspect-ratio: 1;
+            padding: 10px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: rgba(59, 130, 246, 0.05);
+            border: 1px solid rgba(59, 130, 246, 0.1);
+        }
+
+        .calendar-day:hover {
+            background: rgba(59, 130, 246, 0.1);
+        }
+
+        .calendar-day.today {
+            border: 2px solid var(--arogya-light-blue);
+        }
+
+        .calendar-day.selected-day {
+            background: linear-gradient(135deg, var(--arogya-light-blue), #60a5fa);
+            color: white;
+            box-shadow: 0 5px 15px rgba(59, 130, 246, 0.3);
+        }
+
+        .calendar-day.empty-day {
+            background: transparent;
+            cursor: default;
+        }
+
+        .day-number {
+            font-weight: 600;
+            margin-bottom: 5px;
+            font-size: 0.9rem;
+        }
+
+        .status-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            margin: 1px;
+        }
+
+        .status-taken {
+            background: #10b981;
+        }
+
+        .status-skipped {
+            background: #ef4444;
+        }
+
+        .status-pending {
+            background: #f59e0b;
+        }
+
+        .alert-banner {
+            margin: 20px auto;
+            max-width: 1400px;
+            padding: 15px 20px;
+            border-radius: 12px;
+            color: white;
+            font-weight: 700;
+            display: none;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .alert-banner.visible {
+            display: flex;
+        }
+
+        .alert-banner.safe { background: #10b981; }
+        .alert-banner.warning { background: #f59e0b; }
+        .alert-banner.critical { background: #ef4444; }
+
+        .adherence-progress {
+            margin-top: 20px;
+            width: 100%;
+            background: #e5e7eb;
+            border-radius: 10px;
+            height: 18px;
+            overflow: hidden;
+            border: 1px solid #d1d5db;
+        }
+
+        .adherence-progress-fill {
+            height: 100%;
+            width: 0;
+            background: #10b981;
+            transition: width 0.4s ease;
+        }
+
+        .adherence-meta {
+            margin-top: 10px;
+            font-size: 0.95rem;
+            color: #374151;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .streak-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(251, 191, 36, 0.15);
+            color: #b45309;
+            border: 1px solid #f59e0b;
+            padding: 6px 10px;
+            border-radius: 999px;
+            font-weight: 700;
+        }
+
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        @media (min-width: 768px) {
+            .stats-container {
+                grid-template-columns: repeat(4, 1fr);
+            }
+        }
+
+        .stat-box {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.08), rgba(96, 165, 250, 0.05));
+            padding: 20px;
+            border-radius: 15px;
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: var(--arogya-light-blue);
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            color: #6b7280;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .medicines-sidebar {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(59, 130, 246, 0.1);
+            height: fit-content;
+        }
+
+        .medicines-sidebar h3 {
+            color: var(--arogya-blue);
+            margin-bottom: 20px;
+            font-weight: 700;
+        }
+
+        .medicine-item {
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 10px;
+            background: rgba(59, 130, 246, 0.08);
+            border: 1px solid rgba(59, 130, 246, 0.2);
+        }
+
+        .medicine-item > div:first-child {
+            font-weight: 700;
+            color: var(--arogya-blue);
+            margin-bottom: 8px;
+        }
+
+        .medicine-item > div:nth-child(2) {
+            color: #6b7280;
+            font-size: 0.9rem;
+            margin-bottom: 12px;
+        }
+
+        .medicine-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .action-btn {
+            flex: 1;
+            padding: 8px 12px;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: white;
+        }
+
+        .action-taken {
+            background: linear-gradient(135deg, #10b981, #059669);
+        }
+
+        .action-taken:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 10px rgba(16, 185, 129, 0.3);
+        }
+
+        .action-skipped {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+        }
+
+        .action-skipped:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 10px rgba(239, 68, 68, 0.3);
+        }
+
+        .add-medicine-btn {
+            background: linear-gradient(135deg, var(--arogya-light-blue), #60a5fa);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 10px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .add-medicine-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(59, 130, 246, 0.3);
+        }
+
+        .day-details-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .day-details-modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-header h3 {
+            color: var(--arogya-blue);
+            font-weight: 700;
+        }
+
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #6b7280;
+            transition: all 0.3s ease;
+        }
+
+        .close-modal:hover {
+            color: var(--arogya-blue);
+            transform: rotate(90deg);
+        }
+
+        /* Chatbot Styles */
+        :root {
+            --vapi-primary-color: #1e40af;
+            --vapi-secondary-color: #3b82f6;
+        }
+
+        .vapi-widget {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+
+        .vapi-widget-button {
+            background: linear-gradient(135deg, var(--vapi-primary-color), var(--vapi-secondary-color));
+            border: none;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(30, 64, 175, 0.3);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .vapi-widget-button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 16px rgba(30, 64, 175, 0.4);
+        }
+
+        .vapi-widget-button i {
+            color: white;
+            font-size: 24px;
+        }
+
+        .vapi-widget-iframe {
+            border: none;
+            border-radius: 12px;
+            width: 350px;
+            height: 600px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        @media (max-width: 768px) {
+            .vapi-widget-iframe {
+                width: calc(100vw - 40px);
+                height: calc(100vh - 120px);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="sticky top-0 bg-white shadow-md z-40">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <a href="index.html" class="flex items-center text-2xl font-extrabold text-arogya-blue hover:text-arogya-light-blue transition duration-150">
+                        <svg class="h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0zM12 4v2m-3 7h6m-3-3v6" />
+                        </svg>
+                        AarogyaLink
+                    </a>
+                </div>
+                <div class="hidden sm:flex sm:items-center sm:ml-6 space-x-4">
+                    <a href="medicine-management.html" class="nav-link">Back to MediGear</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="page-header">
+        <h2>Medication Tracker</h2>
+        <p>Track your medicine intake and monitor adherence</p>
+    </div>
+
+    <div id="alertBanner" class="alert-banner safe"><i class="fas fa-shield-alt"></i> All systems are good. Keep going.</div>
+
+    <div class="tracker-container">
+        <div class="calendar-section">
+            <div class="calendar-header">
+                <div class="month-navigation">
+                    <button class="nav-btn" onclick="changeMonth(-1)">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <div class="current-month" id="currentMonth"></div>
+                    <button class="nav-btn" onclick="changeMonth(1)">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="calendar-grid" id="calendarGrid"></div>
+
+            <div class="adherence-progress" aria-label="Adherence progress bar">
+                <div id="adherenceProgressFill" class="adherence-progress-fill"></div>
+            </div>
+            <div class="adherence-meta">
+                <span id="adherenceStatusText">Status: Excellent</span>
+                <span id="adherenceLabel">Adherence: 100%</span>
+            </div>
+
+            <div class="stats-container">
+                <div class="stat-box">
+                    <div class="stat-value" id="adherenceRate">0%</div>
+                    <div class="stat-label">Adherence Rate</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-value" id="currentStreak">0</div>
+                    <div class="stat-label">Current Streak</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-value" id="takenToday">0</div>
+                    <div class="stat-label">Taken Today</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-value" id="pendingToday">0</div>
+                    <div class="stat-label">Pending Today</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="medicines-sidebar">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h3 style="margin: 0;">Active Medicines</h3>
+                <a href="add-medicine.html" class="add-medicine-btn" style="font-size: 0.85rem; padding: 8px 12px;">
+                    <i class="fas fa-plus"></i> Add
+                </a>
+            </div>
+            <div class="medicines-list" id="medicinesList"></div>
+        </div>
+    </div>
+
+    <div class="day-details-modal" id="dayDetailsModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalDayTitle"></h3>
+                <button class="close-modal" onclick="closeDayDetails()">×</button>
+            </div>
+            <div id="dayRecords"></div>
+        </div>
+    </div>
+
+    <script>
+        let currentDate = new Date();
+        let selectedDate = new Date();
+
+        function initCalendar() {
+            const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
+                'July', 'August', 'September', 'October', 'November', 'December'];
+            document.getElementById('currentMonth').textContent = 
+                `${monthNames[currentDate.getMonth()]} ${currentDate.getFullYear()}`;
+            renderCalendar();
+            loadMedicines();
+            updateStats();
+        }
+
+        function renderCalendar() {
+            const calendarGrid = document.getElementById('calendarGrid');
+            calendarGrid.innerHTML = '';
+            
+            const dayHeaders = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+            dayHeaders.forEach(day => {
+                const dayEl = document.createElement('div');
+                dayEl.className = 'calendar-day-header';
+                dayEl.textContent = day;
+                calendarGrid.appendChild(dayEl);
+            });
+            
+            const firstDay = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+            const startingDay = firstDay.getDay();
+            const daysInMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).getDate();
+            
+            for (let i = 0; i < startingDay; i++) {
+                const emptyDay = document.createElement('div');
+                emptyDay.className = 'calendar-day empty-day';
+                calendarGrid.appendChild(emptyDay);
+            }
+            
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dayEl = document.createElement('div');
+                dayEl.className = 'calendar-day';
+                dayEl.innerHTML = `<div class="day-number">${day}</div>`;
+                
+                const dateObj = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
+                if (isSameDay(dateObj, new Date())) dayEl.classList.add('today');
+                if (isSameDay(dateObj, selectedDate)) dayEl.classList.add('selected-day');
+                
+                dayEl.onclick = () => selectDay(dateObj);
+                calendarGrid.appendChild(dayEl);
+            }
+        }
+
+        function selectDay(date) {
+            selectedDate = date;
+            renderCalendar();
+            showDayDetails(date);
+            updateStats();
+        }
+
+        function changeMonth(offset) {
+            currentDate.setMonth(currentDate.getMonth() + offset);
+            renderCalendar();
+        }
+
+        function loadMedicines() {
+            const medicinesList = document.getElementById('medicinesList');
+            const medicines = JSON.parse(localStorage.getItem('medicines') || '[]');
+            medicinesList.innerHTML = '';
+            
+            if (medicines.length === 0) {
+                medicinesList.innerHTML = '<p style="color: #9ca3af; text-align: center; padding: 20px;">No medicines added yet</p>';
+                return;
+            }
+
+            medicines.forEach(medicine => {
+                const medicineEl = document.createElement('div');
+                medicineEl.className = 'medicine-item';
+                medicineEl.innerHTML = `
+                    <div>${medicine.name}</div>
+                    <div><strong>Dosage:</strong> ${medicine.dosage}</div>
+                    <div class="medicine-actions">
+                        <button class="action-btn action-taken" onclick="recordMedicine('${medicine.id}', 'taken')">
+                            <i class="fas fa-check"></i> Taken
+                        </button>
+                        <button class="action-btn action-skipped" onclick="recordMedicine('${medicine.id}', 'skipped')">
+                            <i class="fas fa-times"></i> Skipped
+                        </button>
+                    </div>
+                `;
+                medicinesList.appendChild(medicineEl);
+            });
+        }
+
+        function recordMedicine(medicineId, status) {
+            const now = new Date();
+            const dateStr = now.toISOString().split('T')[0];
+            const timeStr = now.toTimeString().split(' ')[0].substring(0, 5);
+            
+            const tracking = JSON.parse(localStorage.getItem('medicineTracking') || '{}');
+            if (!tracking[medicineId]) tracking[medicineId] = { records: {} };
+            if (!tracking[medicineId].records[dateStr]) tracking[medicineId].records[dateStr] = [];
+            
+            const record = {
+                time: timeStr,
+                status: status,
+                recordedAt: now.toISOString()
+            };
+            
+            tracking[medicineId].records[dateStr].push(record);
+            localStorage.setItem('medicineTracking', JSON.stringify(tracking));
+            
+            showNotification(`Medicine marked as ${status}!`, status === 'taken' ? 'success' : 'warning');
+            updateStats();
+        }
+
+        function showNotification(message, type) {
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 80px;
+                right: 20px;
+                background: ${type === 'success' ? '#10b981' : '#f59e0b'};
+                color: white;
+                padding: 15px 20px;
+                border-radius: 10px;
+                z-index: 9999;
+                animation: slideInRight 0.3s ease;
+            `;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            setTimeout(() => {
+                notification.style.animation = 'slideOutRight 0.3s ease';
+                setTimeout(() => notification.remove(), 300);
+            }, 3000);
+        }
+
+        function updateStats() {
+            const medicines = JSON.parse(localStorage.getItem('medicines') || '[]');
+            const tracking = JSON.parse(localStorage.getItem('medicineTracking') || '{}');
+            const now = new Date();
+            const todayStr = now.toISOString().split('T')[0];
+
+            const dateStr = selectedDate ? selectedDate.toISOString().split('T')[0] : todayStr;
+
+            let takenToday = 0;
+            let skippedToday = 0;
+            let scheduledToday = 0;
+            let totalTaken = 0;
+            let totalSkipped = 0;
+            let totalScheduled = 0;
+
+            medicines.forEach(med => {
+                const expectedToday = med.schedule && med.schedule.includes(dateStr) ? med.rawTimes.length : 0;
+                const expectedTotal = med.schedule ? med.schedule.length * med.rawTimes.length : 0;
+
+                scheduledToday += expectedToday;
+                totalScheduled += expectedTotal;
+
+                const medTrack = tracking[med.id];
+                if (medTrack && medTrack.records) {
+                    Object.entries(medTrack.records).forEach(([day, records]) => {
+                        let rawTaken = records.filter(r => r.status === 'taken').length;
+                        let rawSkipped = records.filter(r => r.status === 'skipped').length;
+
+                        const daySchedule = (med.schedule && med.schedule.includes(day)) ? med.rawTimes.length : 0;
+                        const dayTaken = Math.min(rawTaken, daySchedule);
+                        const daySkipped = Math.min(rawSkipped, Math.max(0, daySchedule - dayTaken));
+
+                        if (day === dateStr) {
+                            takenToday += dayTaken;
+                            skippedToday += daySkipped;
+                        }
+
+                        totalTaken += dayTaken;
+                        totalSkipped += daySkipped;
+                    });
+                }
+            });
+
+            const completedToday = Math.min(scheduledToday, takenToday + skippedToday);
+            const pendingToday = Math.max(0, scheduledToday - completedToday);
+            const missedToday = pendingToday;
+            const adherencePercent = scheduledToday > 0 ? Math.round((takenToday / scheduledToday) * 100) : 100;
+            const overallAdherence = totalScheduled > 0 ? Math.round((totalTaken / totalScheduled) * 100) : 100;
+
+            const statusInfo = getAdherenceStatus(adherencePercent);
+
+            const currentStreak = calculateStreak(medicines, tracking);
+
+            document.getElementById('adherenceRate').textContent = `${Math.min(100, adherencePercent)}%`;
+            document.getElementById('currentStreak').textContent = currentStreak;
+            document.getElementById('takenToday').textContent = takenToday;
+            document.getElementById('pendingToday').textContent = pendingToday;
+
+            const fill = document.getElementById('adherenceProgressFill');
+            fill.style.width = `${adherencePercent}%`;
+            fill.style.background = statusInfo.color;
+
+            document.getElementById('adherenceStatusText').textContent = `Status: ${statusInfo.label}`;
+            document.getElementById('adherenceLabel').textContent = `Adherence: ${adherencePercent}% (Overall ${overallAdherence}%)`;
+
+            showAlertBanner(adherencePercent, missedToday, scheduledToday);
+            checkDoseAlerts(medicines, tracking, now, todayStr);
+        }
+
+        function getAdherenceStatus(percent) {
+            if (percent >= 90) return { label: 'Excellent', color: '#10b981', class: 'safe' };
+            if (percent >= 70) return { label: 'Moderate', color: '#f59e0b', class: 'warning' };
+            return { label: 'Poor', color: '#ef4444', class: 'critical' };
+        }
+
+        function calculateStreak(medicines, tracking) {
+            const today = new Date();
+            let streak = 0;
+
+            for (let i = 0; i < 30; i++) {
+                const d = new Date(today);
+                d.setDate(today.getDate() - i);
+                const dateKey = d.toISOString().split('T')[0];
+
+                const { scheduled, taken } = getDailyCounts(medicines, tracking, dateKey);
+
+                if (scheduled > 0 && taken >= scheduled) {
+                    streak++;
+                } else {
+                    break;
+                }
+            }
+            return streak;
+        }
+
+        function getDailyCounts(medicines, tracking, dateKey) {
+            let scheduled = 0;
+            let taken = 0;
+
+            medicines.forEach(med => {
+                if (med.schedule && med.schedule.includes(dateKey)) {
+                    scheduled += med.rawTimes.length;
+                }
+                const medTrack = tracking[med.id];
+                if (medTrack && medTrack.records && medTrack.records[dateKey]) {
+                    taken += medTrack.records[dateKey].filter(r => r.status === 'taken').length;
+                }
+            });
+
+            return { scheduled, taken };
+        }
+
+        function showAlertBanner(adherencePercent, missedToday, scheduledToday) {
+            const banner = document.getElementById('alertBanner');
+            banner.classList.remove('safe', 'warning', 'critical');
+
+            if (scheduledToday === 0) {
+                banner.classList.add('safe');
+                banner.innerHTML = '<i class="fas fa-info-circle"></i> No scheduled doses today. Add medicine schedule to start tracking.';
+                banner.classList.add('visible');
+                return;
+            }
+
+            if (missedToday >= 5) {
+                banner.classList.add('critical');
+                banner.innerHTML = `<i class="fas fa-skull-crossbones"></i> Emergency: ${missedToday} doses missed today. See doctor and call help! <button class="action-btn action-skipped" onclick="triggerDoctorCall()">Call Doctor</button>`;
+            } else if (missedToday >= 2 || adherencePercent < 70) {
+                banner.classList.add('critical');
+                banner.innerHTML = `<i class="fas fa-exclamation-triangle"></i> Critical: ${missedToday} missed, adherence ${adherencePercent}%. Please act now.`;
+            } else if (missedToday > 0 || adherencePercent < 90) {
+                banner.classList.add('warning');
+                banner.innerHTML = `<i class="fas fa-exclamation-circle"></i> Warning: ${missedToday} missed, adherence ${adherencePercent}%. Aim to reach 90%+.`;
+                showDoseNotification(`Warning: ${missedToday} dose(s) missed today`, 'warning');
+            } else {
+                banner.classList.add('safe');
+                banner.innerHTML = `<i class="fas fa-check-circle"></i> Excellent: All doses taken. Keep the streak alive! 🔥`;
+            }
+
+            banner.classList.add('visible');
+        }
+
+        function triggerDoctorCall() {
+            alert('Please contact your doctor immediately: call +91-XXXXXXXXXX or visit the nearest hospital');
+        }
+
+        function checkDoseAlerts(medicines, tracking, now, dateKey) {
+            const upcoming = [];
+            const missed = [];
+
+            medicines.forEach(med => {
+                if (!med.schedule || !med.schedule.includes(dateKey)) return;
+                med.rawTimes.forEach(time => {
+                    const dt = new Date(`${dateKey}T${time}:00`);
+                    const isTaken = isDoseTaken(med.id, dateKey, time, tracking);
+
+                    if (!isTaken && dt > now && dt - now <= 30 * 60 * 1000) {
+                        upcoming.push({med: med.name, time});
+                    }
+                    if (!isTaken && dt < now && now - dt >= 15 * 60 * 1000) {
+                        missed.push({med: med.name, time});
+                    }
+                });
+            });
+
+            if (upcoming.length > 0) {
+                showDoseNotification(`Reminder: ${upcoming.length} dose(s) due soon (${upcoming.map(x => `${x.med}@${x.time}`).join(', ')})`, 'warning');
+            }
+            if (missed.length > 0) {
+                showDoseNotification(`Missed dose warning: ${missed.length} dose(s) missed (${missed.map(x => `${x.med}@${x.time}`).join(', ')})`, 'critical');
+            }
+        }
+
+        function isDoseTaken(medId, dateKey, time, tracking) {
+            const medTrack = tracking[medId];
+            if (!medTrack || !medTrack.records || !medTrack.records[dateKey]) return false;
+            return medTrack.records[dateKey].some(r => r.status === 'taken' && r.time === time);
+        }
+
+        function showDoseNotification(message, type) {
+            const existing = document.querySelectorAll('.dose-notification');
+            existing.forEach(n => n.remove());
+
+            const notification = document.createElement('div');
+            notification.className = 'dose-notification';
+            const bgColor = type === 'success' ? '#10b981' : (type === 'warning' ? '#f59e0b' : '#ef4444');
+
+            notification.style.cssText = `
+                position: fixed;
+                top: ${80 + existing.length * 60}px;
+                right: 20px;
+                background: ${bgColor};
+                color: white;
+                padding: 12px 16px;
+                border-radius: 8px;
+                z-index: 9999;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+                font-weight: 600;
+            `;
+            notification.innerHTML = `<i class="fas fa-bell" style="margin-right: 8px;"></i>${message}`;
+            document.body.appendChild(notification);
+
+            playAlertSound(type);
+
+            setTimeout(() => {
+                notification.remove();
+            }, 5500);
+        }
+
+        function playAlertSound(type) {
+            let soundUrl = '';
+            if (type === 'success') {
+                soundUrl = 'https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg';
+            } else if (type === 'warning') {
+                soundUrl = 'https://actions.google.com/sounds/v1/alarms/alarm_clock.ogg';
+            } else {
+                soundUrl = 'https://actions.google.com/sounds/v1/alarms/warning_1.ogg';
+            }
+
+            const audio = new Audio(soundUrl);
+            audio.volume = 0.6;
+            audio.play().catch(() => {
+                // ignore autoplay block in some browsers
+            });
+        }
+
+        function showDayDetails(date) {
+            const modal = document.getElementById('dayDetailsModal');
+            const dayRecordsEl = document.getElementById('dayRecords');
+            const dateKey = date.toISOString().split('T')[0];
+            const medicines = JSON.parse(localStorage.getItem('medicines') || '[]');
+            const tracking = JSON.parse(localStorage.getItem('medicineTracking') || '{}');
+
+            document.getElementById('modalDayTitle').textContent = date.toDateString();
+
+            if (medicines.length === 0) {
+                dayRecordsEl.innerHTML = '<p style="color: #6b7280;">No medicines added yet.</p>';
+            } else {
+                dayRecordsEl.innerHTML = '';
+
+                medicines.forEach(med => {
+                    const scheduled = (med.schedule || []).includes(dateKey);
+                    const expectedCount = scheduled ? med.rawTimes.length : 0;
+                    const records = (tracking[med.id] && tracking[med.id].records && tracking[med.id].records[dateKey]) || [];
+                    const takenCount = records.filter(r => r.status === 'taken').length;
+                    const skippedCount = records.filter(r => r.status === 'skipped').length;
+                    const pendingCount = Math.max(0, expectedCount - takenCount - skippedCount);
+
+                    let recordHtml = `<div class="medicine-item">
+                        <div>${med.name} (${med.dosage})</div>
+                        <div><strong>Scheduled:</strong> ${expectedCount} dose(s)</div>
+                        <div><strong>Taken:</strong> ${takenCount} | <strong>Skipped:</strong> ${skippedCount} | <strong>Pending:</strong> ${pendingCount}</div>
+                        <div style="font-size:0.9rem; margin-top:8px;">`;
+
+                    if (records.length === 0) {
+                        recordHtml += `<span style="color:#f59e0b;">No actions yet</span>`;
+                    } else {
+                        records.forEach(rec => {
+                            recordHtml += `<div>• ${rec.time} - <strong>${rec.status}</strong></div>`;
+                        });
+                    }
+
+                    recordHtml += '</div></div>';
+
+                    dayRecordsEl.innerHTML += recordHtml;
+                });
+            }
+
+            modal.classList.add('active');
+        }
+
+        function closeDayDetails() {
+            document.getElementById('dayDetailsModal').classList.remove('active');
+        }
+
+        function isSameDay(date1, date2) {
+            return date1.getDate() === date2.getDate() &&
+                   date1.getMonth() === date2.getMonth() &&
+                   date1.getFullYear() === date2.getFullYear();
+        }
+
+        document.addEventListener('DOMContentLoaded', initCalendar);
+    </script>
+
+    <!-- Chatbot Script -->
+    <script src="https://cdn.vapi.ai/web-sdk.js"></script>
+    <script>
+        (function(d, t) {
+            var v = d.createElement(t), s = d.getElementsByTagName(t)[0];
+            v.onload = function() {
+                try {
+                    window.vapiInstance = window.vapiSDK.run({
+                        apiKey: "3f316145-e21e-4681-9bf0-7479538e1e33",
+                        assistant: "ae3149bf-85fd-4e58-898c-6ba1cd44241b",
+                        config: {
+                            position: "right",
+                            offset: "20px",
+                            width: "350px",
+                            height: "600px",
+                            idleTime: 30000,
+                            widget: {
+                                color: "#1e40af",
+                                text: "Chat with DoctorBot",
+                                icon: "https://cdn.vapi.ai/widget-icon.png"
+                            }
+                        }
+                    });
+                } catch (error) {
+                    console.error("Vapi widget failed to load:", error);
+                    // Fallback: Create a simple iframe
+                    const fallbackDiv = document.createElement('div');
+                    fallbackDiv.className = 'vapi-widget';
+                    fallbackDiv.innerHTML = `
+                        <iframe
+                            src="https://vapi.ai/widget?assistant=ae3149bf-85fd-4e58-898c-6ba1cd44241b"
+                            class="vapi-widget-iframe"
+                            title="DoctorBot Chat"
+                        ></iframe>
+                    `;
+                    document.body.appendChild(fallbackDiv);
+                }
+            };
+            v.src = "https://cdn.vapi.ai/web-sdk.js";
+            v.defer = true;
+            s.parentNode.insertBefore(v, s);
+        })(document, "script");
+    </script>
+</body>
+</html>

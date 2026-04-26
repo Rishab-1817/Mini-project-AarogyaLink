@@ -1,0 +1,332 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Telemedicine Video Call</title>
+  <style>
+    :root {
+      --arogya-blue: #1e40af;
+      --arogya-light-blue: #93c5fd;
+      --arogya-text: #0f172a;
+      --nav-bg: #ffffff;
+      --nav-border: #e2e8f0;
+    }
+    nav.main-nav {
+      position: sticky;
+      top: 0;
+      background: var(--nav-bg);
+      z-index: 40
+      box-shadow: 0 2px 10px rgba(15, 23, 42, 0.08);
+      border-bottom: 1px solid var(--nav-border);
+    }
+    nav.main-nav .container-nav {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      min-height: 72px;
+      flex-wrap: wrap;
+    }
+    .brand {
+      color: var(--arogya-blue);
+      font-size: 1.8rem;
+      font-weight: 800;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+    .brand i { font-size: 1.45rem; }
+    .nav-links {
+      display: flex;
+      gap: 14px;
+      flex-wrap: wrap;
+      align-items: center;
+      margin-left: 1rem;
+    }
+    .nav-links a {
+      color: var(--arogya-text);
+      font-weight: 600;
+      font-size: 0.95rem;
+      text-decoration: none;
+      padding: 8px 11px;
+      border-radius: 8px;
+      transition: all 0.18s ease;
+      white-space: nowrap;
+    }
+    .nav-links a:hover { color: var(--arogya-blue); background: #eff6ff; }
+    .nav-links a.active { color: #1e3a8a; background: #dbeafe; }
+    .emergency-btn {
+      background: #dc2626;
+      color: #fff;
+      border: 0;
+      border-radius: 999px;
+      font-weight: 700;
+      padding: 0.65rem 1.2rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      cursor: pointer;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .emergency-btn:hover { transform: translateY(-1px); box-shadow: 0 8px 18px rgba(220, 38, 38, 0.25); }
+    .emergency-btn i { font-size: 0.92rem; }
+    .mobile-menu-trigger { display: none; }
+
+    /* Existing page styles */
+    body { font-family: Arial, Helvetica, sans-serif; margin:0; padding:16px; background:#f6f7fb; color:#111; }
+    .container{max-width:980px;margin:0 auto}
+    .panel{background:#fff;padding:12px;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,0.08);margin-bottom:12px}
+    label{display:block;font-size:14px;margin:8px 0 4px}
+    input[type=text]{width:100%;padding:8px;border:1px solid #dfe3e8;border-radius:6px}
+    .row{display:flex;gap:8px}
+    .row > *{flex:1}
+    button{padding:10px 12px;border-radius:6px;border:0;background:#2b6df6;color:#fff;font-weight:600;cursor:pointer}
+    button.secondary{background:#6b7280}
+    #video-call{height:70vh;border-radius:8px;overflow:hidden;background:#000;margin-top:12px}
+    .controls{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+    .meta{font-size:13px;color:#444;margin-top:8px}
+    @media (max-width:640px){#video-call{height:60vh}}
+
+    @media (max-width:940px) {
+      .nav-links { display: none; width: 100%; margin-top: 10px; }
+      .nav-links.mobile-open { display: flex; flex-direction: column; background: #fff; border-top: 1px solid #e2e8f0; padding: 10px 0; }
+      .mobile-menu-trigger { display: inline-flex; border:1px solid #cbd5e1; background:#f8fafc; padding:8px 10px; border-radius:8px; cursor:pointer; align-items:center; }
+    }
+  </style>
+</head>
+<body>
+  <!-- Navigation Bar -->
+  <nav class="main-nav">
+    <div class="container-nav">
+      <a href="index.html" class="brand"><i class="fas fa-heartbeat"></i> AarogyaLink</a>
+      <div id="nav-links" class="nav-links">
+        <a href="services.html" class="nav-link">Services</a>
+        <!-- <a href="medicine-management.html" class="nav-link">MediGear</a>
+        <a href="healthed.html" class="nav-link">HealthEd</a>
+        <a href="telemedicine-map.html" class="nav-link">Nearest Care Map</a>
+        <a href="aisymptomhealth.html" class="nav-link">AI Symptom Checker</a> -->
+        <a href="appointment.html" class="nav-link">Appointments</a>
+        <a href="videoconsultation.html" class="nav-link active">Video Consultations</a>
+        <a href="familyhealthtree.html" class="nav-link">Familytree</a>
+        <a href="contact.html" class="nav-link">Contact Us</a>
+      </div>
+
+      <div style="display:flex;align-items:center;gap:.75rem;">
+        <button class="emergency-btn"><i class="fas fa-phone-alt"></i><span>Emergency</span></button>
+        <button id="mobile-menu-button" class="mobile-menu-trigger"><i class="fas fa-bars"></i> Menu</button>
+      </div>
+    </div>
+  </nav>
+    </div>
+  </nav>
+
+  <script>
+    const mobileButton = document.getElementById('mobile-menu-button');
+    const navLinks = document.getElementById('nav-links');
+
+    if (mobileButton && navLinks) {
+      mobileButton.addEventListener('click', () => {
+        navLinks.classList.toggle('mobile-open');
+      });
+    }
+
+    // Activate the active link style
+    document.querySelectorAll('.nav-link').forEach(link => {
+      if (link.classList.contains('active')) {
+        link.classList.add('active');
+      }
+    });
+  </script>
+
+  <div class="container">
+    <h2>Telemedicine — Video Consultation</h2>
+
+    <div class="panel">
+      <p>Generate a private room ID and start or share the call link with the other participant (doctor or patient).</p>
+
+      <label for="doctorId">Doctor ID</label>
+      <input id="doctorId" type="text" placeholder="e.g. D12345" />
+
+      <label for="patientId">Patient ID</label>
+      <input id="patientId" type="text" placeholder="e.g. P67890" />
+
+      <label for="yourName">Your display name</label>
+      <input id="yourName" type="text" placeholder="e.g. Dr. Kumar or Alice" />
+
+      <div style="margin-top:8px" class="row">
+        <button id="genBtn">Generate Room ID</button>
+        <button id="copyBtn" class="secondary" disabled>Copy Link</button>
+      </div>
+
+      <div class="meta">
+        <div>Room ID: <span id="roomIdText">—</span></div>
+        <div>Share this link privately: <a id="roomLink" href="#">—</a></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        <button id="joinBtn" disabled>Start / Join Call</button>
+        <button id="leaveBtn" class="secondary" disabled>End Call</button>
+        <div style="flex:1"></div>
+      </div>
+
+      <div id="video-call" aria-label="Video call container"></div>
+
+      <div class="controls">
+        <button id="toggleAudio" disabled>Mute / Unmute</button>
+        <button id="toggleVideo" disabled>Video On/Off</button>
+      </div>
+    </div>
+
+    <p style="font-size:13px;color:#666">Notes: This uses Jitsi Meet (open-source). No login is required — keep room links private.</p>
+  </div>
+
+  <script src="https://meet.jit.si/external_api.js"></script>
+  <script>
+    const genBtn = document.getElementById('genBtn');
+    const copyBtn = document.getElementById('copyBtn');
+    const joinBtn = document.getElementById('joinBtn');
+    const leaveBtn = document.getElementById('leaveBtn');
+    const toggleAudioBtn = document.getElementById('toggleAudio');
+    const toggleVideoBtn = document.getElementById('toggleVideo');
+    const roomIdText = document.getElementById('roomIdText');
+    const roomLink = document.getElementById('roomLink');
+    const doctorId = document.getElementById('doctorId');
+    const patientId = document.getElementById('patientId');
+    const yourName = document.getElementById('yourName');
+
+    let api = null;
+    let currentRoom = null;
+
+    function setControlState(available) {
+      joinBtn.disabled = !available;
+      toggleAudioBtn.disabled = !available;
+      toggleVideoBtn.disabled = !available;
+      leaveBtn.disabled = !available;
+    }
+
+    function updateActionButtons() {
+      const inCall = api !== null;
+      joinBtn.disabled = inCall;
+      leaveBtn.disabled = !inCall;
+      toggleAudioBtn.disabled = !inCall;
+      toggleVideoBtn.disabled = !inCall;
+    }
+
+    function generateRoomId() {
+      const d = doctorId.value.trim() || 'doc';
+      const p = patientId.value.trim() || 'patient';
+      const short = Math.random().toString(36).substring(2, 8);
+      return `${d}-${p}-${short}`.replace(/\s+/g, '').toLowerCase();
+    }
+
+    genBtn.addEventListener('click', () => {
+      const room = generateRoomId();
+      currentRoom = room;
+      roomIdText.textContent = room;
+      const href = `https://meet.jit.si/${encodeURIComponent(room)}`;
+      roomLink.textContent = href;
+      roomLink.href = href;
+      copyBtn.disabled = false;
+      joinBtn.disabled = false;
+      copyBtn.textContent = 'Copy Link';
+    });
+
+    copyBtn.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(roomLink.textContent);
+        copyBtn.textContent = 'Copied!';
+        setTimeout(() => { copyBtn.textContent = 'Copy Link'; }, 1500);
+      } catch (err) {
+        alert('Clipboard copy failed, please copy manually');
+      }
+    });
+
+    joinBtn.addEventListener('click', () => {
+      if (api) {
+        return;
+      }
+
+      if (!currentRoom) {
+        alert('Please generate a room first.');
+        return;
+      }
+
+      const displayName = yourName.value.trim() || 'Guest User';
+      const domain = 'meet.jit.si';
+      const options = {
+        roomName: currentRoom,
+        parentNode: document.getElementById('video-call'),
+        width: '100%',
+        height: '100%',
+        interfaceConfigOverwrite: {
+          TOOLBAR_BUTTONS: ['microphone', 'camera', 'hangup', 'tileview']
+        },
+        configOverwrite: {
+          prejoinPageEnabled: false,
+          startWithAudioMuted: false,
+          startWithVideoMuted: false,
+          disableSimulcast: false
+        },
+        userInfo: { displayName }
+      };
+
+      api = new JitsiMeetExternalAPI(domain, options);
+
+      api.addEventListener('readyToClose', () => {
+        leaveCall();
+      });
+
+      api.addEventListener('audioMuteStatusChanged', (e) => {
+        toggleAudioBtn.textContent = e.muted ? 'Unmute' : 'Mute';
+      });
+
+      api.addEventListener('videoMuteStatusChanged', (e) => {
+        toggleVideoBtn.textContent = e.muted ? 'Video On' : 'Video Off';
+      });
+
+      updateActionButtons();
+    });
+
+    function leaveCall() {
+      if (!api) return;
+      try { api.dispose(); } catch (_e) {}
+      api = null;
+      document.getElementById('video-call').innerHTML = '';
+      updateActionButtons();
+      roomIdText.textContent = currentRoom || '—';
+    }
+
+    leaveBtn.addEventListener('click', leaveCall);
+
+    toggleAudioBtn.addEventListener('click', () => {
+      if (!api) return;
+      api.executeCommand('toggleAudio');
+    });
+
+    toggleVideoBtn.addEventListener('click', () => {
+      if (!api) return;
+      api.executeCommand('toggleVideo');
+    });
+
+    // Auto-load room from URL (if provided)
+    const urlParams = new URLSearchParams(window.location.search);
+    const roomFromUrl = urlParams.get('room');
+    if (roomFromUrl) {
+      currentRoom = roomFromUrl;
+      roomIdText.textContent = roomFromUrl;
+      roomLink.textContent = `${window.location.origin}${window.location.pathname}?room=${encodeURIComponent(roomFromUrl)}`;
+      roomLink.href = roomLink.textContent;
+      copyBtn.disabled = false;
+      joinBtn.disabled = false;
+    }
+
+    updateActionButtons();
+  </script>
+</body>
+</html>

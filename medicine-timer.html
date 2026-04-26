@@ -1,0 +1,905 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Medicine Timer - AarogyaLink</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --arogya-blue: #1e40af;
+            --arogya-light-blue: #3b82f6;
+            --arogya-bg-light: #f9fafb;
+            --arogya-extra-light: #eff6ff;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, var(--arogya-extra-light) 0%, #f0f9ff 100%);
+            min-height: 100vh;
+        }
+
+        .medicine-timer-container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        .timer-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .timer-header h2 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: var(--arogya-blue);
+            margin-bottom: 10px;
+        }
+
+        .timer-header p {
+            color: #6b7280;
+            font-size: 1.1rem;
+        }
+
+        .timer-card {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(59, 130, 246, 0.1);
+            margin-bottom: 30px;
+        }
+
+        .timer-display {
+            background: linear-gradient(135deg, var(--arogya-light-blue), #60a5fa);
+            border-radius: 20px;
+            padding: 60px 40px;
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(59, 130, 246, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .timer-display.running {
+            animation: timerGlow 1.5s ease-in-out infinite;
+        }
+
+        .timer-display.completed {
+            animation: timerPulseCompletion 0.6s ease-out;
+            background: linear-gradient(135deg, #10b981, #059669);
+        }
+
+        @keyframes timerGlow {
+            0%, 100% { box-shadow: 0 10px 30px rgba(59, 130, 246, 0.2), 0 0 50px rgba(59, 130, 246, 0.1); }
+            50% { box-shadow: 0 10px 30px rgba(59, 130, 246, 0.3), 0 0 60px rgba(59, 130, 246, 0.2); }
+        }
+
+        @keyframes timerPulseCompletion {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .progress-ring-container {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 200px;
+            height: 200px;
+        }
+
+        .progress-ring {
+            transform: rotate(-90deg);
+            width: 100%;
+            height: 100%;
+        }
+
+        .progress-ring-circle {
+            transition: stroke-dashoffset 0.3s linear;
+            stroke: rgba(255, 255, 255, 0.3);
+            fill: transparent;
+            stroke-linecap: round;
+        }
+
+        .timer-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .timer-time {
+            font-size: 4rem;
+            font-weight: 800;
+            font-family: 'Courier New', monospace;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .timer-status {
+            font-size: 1.1rem;
+            opacity: 0.95;
+            font-weight: 500;
+        }
+
+        .medicine-selector {
+            margin-bottom: 25px;
+        }
+
+        .medicine-selector label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 600;
+            color: var(--arogya-blue);
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid rgba(59, 130, 246, 0.1);
+            border-radius: 10px;
+            font-family: 'Inter', sans-serif;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--arogya-light-blue);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .timer-controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 25px;
+        }
+
+        .timer-btn {
+            flex: 1;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Inter', sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .timer-btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.5);
+            transform: translate(-50%, -50%);
+        }
+
+        .timer-btn.ripple::before {
+            animation: rippleEffect 0.6s ease-out;
+        }
+
+        @keyframes rippleEffect {
+            to {
+                width: 300px;
+                height: 300px;
+                opacity: 0;
+            }
+        }
+
+        .timer-btn-start {
+            background: linear-gradient(135deg, #10b981, #059669);
+        }
+
+        .timer-btn-start:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(16, 185, 129, 0.3);
+        }
+
+        .timer-btn-pause {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+        }
+
+        .timer-btn-pause:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(245, 158, 11, 0.3);
+        }
+
+        .timer-btn-reset {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+        }
+
+        .timer-btn-reset:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(239, 68, 68, 0.3);
+        }
+
+        .timer-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .quick-timers {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+        }
+
+        .quick-timer-btn {
+            padding: 8px 16px;
+            border: 2px solid rgba(59, 130, 246, 0.3);
+            background: rgba(59, 130, 246, 0.05);
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: 600;
+            color: var(--arogya-blue);
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+
+        .quick-timer-btn:hover {
+            background: rgba(59, 130, 246, 0.15);
+            border-color: var(--arogya-light-blue);
+            transform: scale(1.05);
+        }
+
+        .quick-timer-btn.active {
+            background: linear-gradient(135deg, var(--arogya-light-blue), #60a5fa);
+            color: white;
+            border-color: var(--arogya-light-blue);
+        }
+
+        .notification-settings {
+            display: flex;
+            gap: 20px;
+            padding: 20px;
+            background: rgba(59, 130, 246, 0.08);
+            border-radius: 10px;
+        }
+
+        .notification-settings label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            color: var(--arogya-blue);
+        }
+
+        .notification-settings input[type="checkbox"] {
+            cursor: pointer;
+            width: 18px;
+            height: 18px;
+        }
+
+        .upcoming-medicines {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(59, 130, 246, 0.1);
+        }
+
+        .upcoming-medicines h3 {
+            color: var(--arogya-blue);
+            margin-bottom: 20px;
+            font-weight: 700;
+        }
+
+        .medicine-time-item {
+            padding: 15px;
+            background: rgba(59, 130, 246, 0.08);
+            border-radius: 10px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid rgba(59, 130, 246, 0.2);
+        }
+
+        .medicine-time-item strong {
+            color: var(--arogya-blue);
+        }
+
+        .medicine-time-badge {
+            background: linear-gradient(135deg, var(--arogya-light-blue), #60a5fa);
+            color: white;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #9ca3af;
+        }
+
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            color: rgba(59, 130, 246, 0.3);
+        }
+
+        /* Confetti Animation */
+        @keyframes confetti-fall {
+            to {
+                transform: translateY(100vh) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        .confetti {
+            position: fixed;
+            width: 10px;
+            height: 10px;
+            background: var(--arogya-light-blue);
+            animation: confetti-fall 3s ease-out forwards;
+            pointer-events: none;
+            z-index: 9999;
+        }
+
+        .medicine-history {
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(16, 185, 129, 0.1);
+            border-radius: 10px;
+            border-left: 4px solid #10b981;
+        }
+
+        .medicine-history h4 {
+            color: #10b981;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .history-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(16, 185, 129, 0.2);
+            font-size: 0.9rem;
+            color: #375a7f;
+        }
+
+        .history-item:last-child {
+            border-bottom: none;
+        }
+
+        .history-badge {
+            background: #10b981;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .voice-reminder-toggle {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px;
+            background: rgba(59, 130, 246, 0.08);
+            border-radius: 10px;
+            margin-top: 15px;
+        }
+
+        .voice-reminder-toggle label {
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            color: var(--arogya-blue);
+        }
+
+        /* Chatbot Styles */
+        :root {
+            --vapi-primary-color: #1e40af;
+            --vapi-secondary-color: #3b82f6;
+        }
+
+        .vapi-widget {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+
+        .vapi-widget-button {
+            background: linear-gradient(135deg, var(--vapi-primary-color), var(--vapi-secondary-color));
+            border: none;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(30, 64, 175, 0.3);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .vapi-widget-button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 16px rgba(30, 64, 175, 0.4);
+        }
+
+        .vapi-widget-button i {
+            color: white;
+            font-size: 24px;
+        }
+
+        .vapi-widget-iframe {
+            border: none;
+            border-radius: 12px;
+            width: 350px;
+            height: 600px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        @media (max-width: 768px) {
+            .vapi-widget-iframe {
+                width: calc(100vw - 40px);
+                height: calc(100vh - 120px);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="sticky top-0 bg-white shadow-md z-40">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <a href="index.html" class="flex items-center text-2xl font-extrabold text-arogya-blue hover:text-arogya-light-blue transition duration-150">
+                        <svg class="h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0zM12 4v2m-3 7h6m-3-3v6" />
+                        </svg>
+                        AarogyaLink
+                    </a>
+                </div>
+                <div class="hidden sm:flex sm:items-center sm:ml-6 space-x-4">
+                    <a href="medicine-management.html" class="nav-link">Back to MediGear</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="medicine-timer-container">
+        <div class="timer-header">
+            <h2>Medicine Timer</h2>
+            <p>Set reminders and countdown for your medications</p>
+        </div>
+
+        <div class="timer-card">
+            <div class="timer-display" id="timerDisplay">
+                <div class="progress-ring-container">
+                    <svg class="progress-ring" viewBox="0 0 200 200">
+                        <circle cx="100" cy="100" r="90" class="progress-ring-circle" id="progressRing" stroke-width="8"/>
+                    </svg>
+                </div>
+                <div class="timer-content">
+                    <div class="timer-time">00:00:00</div>
+                    <div class="timer-status" id="timerStatus">Inactive</div>
+                </div>
+            </div>
+
+            <div class="medicine-selector">
+                <label>Select Medicine Schedule:</label>
+                <select id="medicineSelect" class="form-control" onchange="onMedicineSelected()">
+                    <option value="">-- Choose a medicine --</option>
+                </select>
+            </div>
+
+            <div class="quick-timers" id="quickTimers">
+                <button class="quick-timer-btn" onclick="setQuickTimer(30)">0.5 min</button>
+                <button class="quick-timer-btn" onclick="setQuickTimer(60)">1 min</button>
+                <button class="quick-timer-btn" onclick="setQuickTimer(300)">5 min</button>
+                <button class="quick-timer-btn" onclick="setQuickTimer(600)">10 min</button>
+                <button class="quick-timer-btn" onclick="setQuickTimer(1800)">30 min</button>
+                <button class="quick-timer-btn" onclick="setQuickTimer(3600)">1 hour</button>
+                <button class="quick-timer-btn" onclick="setQuickTimer(7200)">2 hours</button>
+            </div>
+
+            <div class="timer-controls">
+                <button class="timer-btn timer-btn-start" id="startBtn" onclick="startTimer()">
+                    <i class="fas fa-play"></i> Start
+                </button>
+                <button class="timer-btn timer-btn-pause" id="pauseBtn" onclick="pauseTimer()" disabled>
+                    <i class="fas fa-pause"></i> Pause
+                </button>
+                <button class="timer-btn timer-btn-reset" onclick="resetTimer()">
+                    <i class="fas fa-redo"></i> Reset
+                </button>
+            </div>
+
+            <div class="notification-settings">
+                <label>
+                    <input type="checkbox" id="enableNotification" checked>
+                    <span>🔔 Notifications</span>
+                </label>
+                <label>
+                    <input type="checkbox" id="enableSound" checked>
+                    <span>🔊 Sound Alert</span>
+                </label>
+            </div>
+
+            <div class="voice-reminder-toggle">
+                <label>
+                    <input type="checkbox" id="enableVoice">
+                    <span>🎤 Voice Reminder</span>
+                </label>
+            </div>
+
+            <div class="medicine-history" id="medicineHistory" style="display: none;">
+                <h4>✅ Today's Completed Doses</h4>
+                <div id="historyList"></div>
+            </div>
+        </div>
+
+        <div class="upcoming-medicines">
+            <h3>Today's Medicines</h3>
+            <div id="upcomingList"></div>
+        </div>
+    </div>
+
+    <script>
+        let timerInterval;
+        let totalSeconds = 0;
+        let remainingSeconds = 0;
+        let isRunning = false;
+        let currentMedicineName = '';
+        let medicineHistory = JSON.parse(localStorage.getItem('medicineHistory') || '[]');
+
+        // Add ripple effect to buttons
+        function addRippleEffect(e) {
+            const button = e.currentTarget;
+            const ripple = document.createElement('div');
+            button.classList.add('ripple');
+            setTimeout(() => button.classList.remove('ripple'), 600);
+        }
+
+        // Update progress ring
+        function updateProgressRing() {
+            const circle = document.getElementById('progressRing');
+            if (!circle) return;
+            
+            const radius = 90;
+            const circumference = 2 * Math.PI * radius;
+            const offset = circumference - (remainingSeconds / totalSeconds) * circumference;
+            circle.style.strokeDasharray = circumference;
+            circle.style.strokeDashoffset = offset;
+        }
+
+        // Create confetti effect
+        function createConfetti() {
+            const colors = ['#1e40af', '#3b82f6', '#10b981', '#f59e0b', '#ef4444'];
+            for (let i = 0; i < 30; i++) {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti';
+                confetti.style.left = Math.random() * window.innerWidth + 'px';
+                confetti.style.top = Math.random() * window.innerHeight + 'px';
+                confetti.style.background = colors[Math.floor(Math.random() * colors.length)];
+                confetti.style.setProperty('--duration', (2 + Math.random() * 1) + 's');
+                document.body.appendChild(confetti);
+                setTimeout(() => confetti.remove(), 3000);
+            }
+        }
+
+        // Set quick timer
+        function setQuickTimer(seconds) {
+            totalSeconds = seconds;
+            remainingSeconds = seconds;
+            displayTime();
+            updateProgressRing();
+            
+            // Update active button
+            document.querySelectorAll('.quick-timer-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+        }
+
+        // Play voice reminder
+        function playVoiceReminder() {
+            const utterance = new SpeechSynthesisUtterance(`Time to take your ${currentMedicineName}`);
+            utterance.rate = 1;
+            window.speechSynthesis.speak(utterance);
+        }
+
+        function onMedicineSelected() {
+            const select = document.getElementById('medicineSelect');
+            const medicines = JSON.parse(localStorage.getItem('medicines') || '[]');
+            
+            if (select.value) {
+                const medicine = medicines.find(m => m.id === select.value);
+                if (medicine && medicine.rawTimes && medicine.rawTimes.length > 0) {
+                    const timeString = medicine.rawTimes[0];
+                    const [hours, minutes] = timeString.split(':');
+                    totalSeconds = parseInt(hours) * 3600 + parseInt(minutes) * 60;
+                    remainingSeconds = totalSeconds;
+                    currentMedicineName = medicine.name;
+                    displayTime();
+                    updateProgressRing();
+                    // Clear active quick timer
+                    document.querySelectorAll('.quick-timer-btn').forEach(btn => btn.classList.remove('active'));
+                }
+            }
+        }
+
+        function startTimer() {
+            if (!isRunning && remainingSeconds > 0) {
+                isRunning = true;
+                document.getElementById('startBtn').disabled = true;
+                document.getElementById('pauseBtn').disabled = false;
+                document.getElementById('timerStatus').textContent = '⏳ Running...';
+                document.getElementById('timerDisplay').classList.add('running');
+                
+                timerInterval = setInterval(() => {
+                    if (remainingSeconds > 0) {
+                        remainingSeconds--;
+                        displayTime();
+                        updateProgressRing();
+                    } else {
+                        finishTimer();
+                    }
+                }, 1000);
+            }
+        }
+
+        function pauseTimer() {
+            if (isRunning) {
+                isRunning = false;
+                clearInterval(timerInterval);
+                document.getElementById('startBtn').disabled = false;
+                document.getElementById('pauseBtn').disabled = true;
+                document.getElementById('timerStatus').textContent = '⏸️ Paused';
+                document.getElementById('timerDisplay').classList.remove('running');
+            }
+        }
+
+        function resetTimer() {
+            clearInterval(timerInterval);
+            isRunning = false;
+            remainingSeconds = totalSeconds;
+            document.getElementById('startBtn').disabled = false;
+            document.getElementById('pauseBtn').disabled = true;
+            document.getElementById('timerStatus').textContent = 'Ready';
+            document.getElementById('timerDisplay').classList.remove('running', 'completed');
+            displayTime();
+            updateProgressRing();
+            document.querySelectorAll('.quick-timer-btn').forEach(btn => btn.classList.remove('active'));
+        }
+
+        function displayTime() {
+            const hours = Math.floor(remainingSeconds / 3600);
+            const minutes = Math.floor((remainingSeconds % 3600) / 60);
+            const seconds = remainingSeconds % 60;
+            
+            const timeStr = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+            document.querySelector('.timer-time').textContent = timeStr;
+        }
+
+        function addToHistory() {
+            const timestamp = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+            medicineHistory.push({
+                medicine: currentMedicineName,
+                time: timestamp,
+                date: new Date().toDateString()
+            });
+            localStorage.setItem('medicineHistory', JSON.stringify(medicineHistory));
+            displayHistory();
+        }
+
+        function displayHistory() {
+            const historyList = document.getElementById('historyList');
+            const medicineHistoryDiv = document.getElementById('medicineHistory');
+            
+            if (medicineHistory.length === 0) {
+                medicineHistoryDiv.style.display = 'none';
+                return;
+            }
+
+            medicineHistoryDiv.style.display = 'block';
+            historyList.innerHTML = '';
+            
+            const todayItems = medicineHistory.filter(item => item.date === new Date().toDateString());
+            todayItems.forEach(item => {
+                const historyItem = document.createElement('div');
+                historyItem.className = 'history-item';
+                historyItem.innerHTML = `
+                    <strong>${item.medicine}</strong>
+                    <span class="history-badge">✓ ${item.time}</span>
+                `;
+                historyList.appendChild(historyItem);
+            });
+        }
+
+        function finishTimer() {
+            clearInterval(timerInterval);
+            isRunning = false;
+            document.getElementById('timerStatus').textContent = 'Time\'s Up! 🎉';
+            document.getElementById('timerDisplay').classList.remove('running');
+            document.getElementById('timerDisplay').classList.add('completed');
+            document.getElementById('startBtn').disabled = false;
+            
+            // Add to history if medicine was selected
+            if (currentMedicineName) {
+                addToHistory();
+            }
+            
+            // Celebrations
+            createConfetti();
+            
+            if (document.getElementById('enableNotification').checked) {
+                if ('Notification' in window && Notification.permission === 'granted') {
+                    new Notification('💊 Medicine Time!', {
+                        body: `It's time to take your ${currentMedicineName || 'medicine'}`,
+                        icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%233b82f6"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>'
+                    });
+                }
+            }
+            
+            if (document.getElementById('enableSound').checked) {
+                playTimerSound();
+            }
+
+            if (document.getElementById('enableVoice').checked) {
+                playVoiceReminder();
+            }
+        }
+
+        function playTimerSound() {
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            
+            // Play uplifting beep sequence
+            for (let i = 0; i < 3; i++) {
+                setTimeout(() => {
+                    const oscillator = audioContext.createOscillator();
+                    const gainNode = audioContext.createGain();
+                    
+                    oscillator.connect(gainNode);
+                    gainNode.connect(audioContext.destination);
+                    
+                    oscillator.frequency.value = 600 + (i * 200);
+                    oscillator.type = 'sine';
+                    
+                    gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+                    
+                    oscillator.start(audioContext.currentTime);
+                    oscillator.stop(audioContext.currentTime + 0.3);
+                }, i * 150);
+            }
+        }
+
+        function loadTodaysMedicines() {
+            const medicines = JSON.parse(localStorage.getItem('medicines') || '[]');
+            const medicineSelect = document.getElementById('medicineSelect');
+            const upcomingList = document.getElementById('upcomingList');
+            
+            medicineSelect.innerHTML = '<option value="">-- Choose a medicine --</option>';
+            upcomingList.innerHTML = '';
+            
+            if (medicines.length === 0) {
+                upcomingList.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-inbox"></i>
+                        <p>No medicines scheduled for today</p>
+                        <a href="add-medicine.html" style="color: var(--arogya-light-blue); text-decoration: underline; margin-top: 10px; display: inline-block;">Add a medicine</a>
+                    </div>
+                `;
+                return;
+            }
+
+            medicines.forEach(medicine => {
+                const option = document.createElement('option');
+                option.value = medicine.id;
+                option.textContent = `${medicine.name} - ${medicine.dosage}`;
+                medicineSelect.appendChild(option);
+                
+                if (medicine.rawTimes) {
+                    medicine.rawTimes.forEach(time => {
+                        const item = document.createElement('div');
+                        item.className = 'medicine-time-item';
+                        item.innerHTML = `
+                            <strong>${medicine.name}</strong>
+                            <span class="medicine-time-badge">${formatTime(time)}</span>
+                        `;
+                        upcomingList.appendChild(item);
+                    });
+                }
+            });
+        }
+
+        function formatTime(time) {
+            const [hours, minutes] = time.split(':');
+            const hour = parseInt(hours);
+            const ampm = hour >= 12 ? 'PM' : 'AM';
+            const displayHour = hour % 12 || 12;
+            return `${displayHour}:${minutes} ${ampm}`;
+        }
+
+        // Add ripple effect listeners
+        document.addEventListener('DOMContentLoaded', () => {
+            loadTodaysMedicines();
+            displayTime();
+            displayHistory();
+            
+            document.querySelectorAll('.timer-btn').forEach(btn => {
+                btn.addEventListener('click', addRippleEffect);
+            });
+
+            if ('Notification' in window && Notification.permission === 'default') {
+                Notification.requestPermission();
+            }
+        });
+    </script>
+
+    <!-- Chatbot Script -->
+    <script src="https://cdn.vapi.ai/web-sdk.js"></script>
+    <script>
+        (function(d, t) {
+            var v = d.createElement(t), s = d.getElementsByTagName(t)[0];
+            v.onload = function() {
+                try {
+                    window.vapiInstance = window.vapiSDK.run({
+                        apiKey: "3f316145-e21e-4681-9bf0-7479538e1e33",
+                        assistant: "ae3149bf-85fd-4e58-898c-6ba1cd44241b",
+                        config: {
+                            position: "right",
+                            offset: "20px",
+                            width: "350px",
+                            height: "600px",
+                            idleTime: 30000,
+                            widget: {
+                                color: "#1e40af",
+                                text: "Chat with DoctorBot",
+                                icon: "https://cdn.vapi.ai/widget-icon.png"
+                            }
+                        }
+                    });
+                } catch (error) {
+                    console.error("Vapi widget failed to load:", error);
+                    // Fallback: Create a simple iframe
+                    const fallbackDiv = document.createElement('div');
+                    fallbackDiv.className = 'vapi-widget';
+                    fallbackDiv.innerHTML = `
+                        <iframe
+                            src="https://vapi.ai/widget?assistant=ae3149bf-85fd-4e58-898c-6ba1cd44241b"
+                            class="vapi-widget-iframe"
+                            title="DoctorBot Chat"
+                        ></iframe>
+                    `;
+                    document.body.appendChild(fallbackDiv);
+                }
+            };
+            v.src = "https://cdn.vapi.ai/web-sdk.js";
+            v.defer = true;
+            s.parentNode.insertBefore(v, s);
+        })(document, "script");
+    </script>
+</body>
+</html>
