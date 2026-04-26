@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Medicine - AarogyaLink</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://kit.fontawesome.com/a2e0c3c6f0.js" crossorigin="anonymous"></script>
+    <style>
+        :root {
+            --arogya-blue: #1e40af;
+            --arogya-light-blue: #3b82f6;
+            --arogya-bg-light: #f9fafb;
+            --arogya-extra-light: #eff6ff;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, var(--arogya-extra-light) 0%, #f0f9ff 100%);
+            min-height: 100vh;
+        }
+
+        .medicine-form-container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(59, 130, 246, 0.1);
+            max-width: 800px;
+            margin: 40px auto;
+        }
+
+        .page-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .page-header h2 {
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--arogya-blue);
+            margin-bottom: 10px;
+        }
+
+        .page-header p {
+            color: #6b7280;
+            font-size: 1.1rem;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--arogya-blue);
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid rgba(59, 130, 246, 0.1);
+            border-radius: 10px;
+            font-family: 'Inter', sans-serif;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--arogya-light-blue);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .time-slots-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .time-slot {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 15px;
+            background: rgba(59, 130, 246, 0.08);
+            border-radius: 8px;
+            border: 1px solid rgba(59, 130, 246, 0.2);
+        }
+
+        .time-slot input[type="time"] {
+            border: none;
+            background: transparent;
+            font-family: 'Inter', sans-serif;
+            font-size: 1rem;
+            color: var(--arogya-blue);
+        }
+
+        .remove-time-btn {
+            background: none;
+            border: none;
+            color: #ef4444;
+            cursor: pointer;
+            padding: 5px;
+            font-size: 0.9rem;
+        }
+
+        .duration-options {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-top: 10px;
+        }
+
+        @media (min-width: 768px) {
+            .duration-options {
+                grid-template-columns: repeat(4, 1fr);
+            }
+        }
+
+        .duration-option {
+            padding: 15px;
+            background: rgba(59, 130, 246, 0.08);
+            border: 2px solid rgba(59, 130, 246, 0.2);
+            border-radius: 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .duration-option:hover {
+            background: rgba(59, 130, 246, 0.12);
+        }
+
+        .duration-option.selected {
+            background: linear-gradient(135deg, var(--arogya-light-blue), #60a5fa);
+            border-color: var(--arogya-light-blue);
+            color: white;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 15px;
+            margin-top: 40px;
+        }
+
+        .btn {
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .btn-primary {
+            flex: 1;
+            background: linear-gradient(135deg, var(--arogya-light-blue), #60a5fa);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(59, 130, 246, 0.3);
+        }
+
+        .btn-secondary {
+            background: rgba(59, 130, 246, 0.1);
+            color: var(--arogya-blue);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(59, 130, 246, 0.15);
+        }
+
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(5px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .loading-overlay.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid rgba(59, 130, 246, 0.2);
+            border-top-color: var(--arogya-light-blue);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            max-width: 400px;
+            animation: slideInRight 0.3s ease;
+            border-left: 4px solid #10b981;
+        }
+
+        .toast.error {
+            border-left-color: #ef4444;
+        }
+
+        @keyframes slideInRight {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="sticky top-0 bg-white shadow-md z-40">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <a href="index.html" class="flex items-center text-2xl font-extrabold text-arogya-blue hover:text-arogya-light-blue transition duration-150">
+                        <svg class="h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0zM12 4v2m-3 7h6m-3-3v6" />
+                        </svg>
+                        AarogyaLink
+                    </a>
+                </div>
+                <div class="hidden sm:flex sm:items-center sm:ml-6 space-x-4">
+                    <a href="medicine-management.html" class="nav-link">Back to MediGear</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <div class="page-header">
+            <h2>Add New Medicine</h2>
+            <p>Add medicine details to track and receive reminders</p>
+        </div>
+
+        <div class="medicine-form-container">
+            <form id="medicineForm">
+                <div class="form-group">
+                    <label for="patientName">Patient Name</label>
+                    <input type="text" id="patientName" class="form-control" placeholder="Enter patient's name" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="medicineName">Medicine Name</label>
+                    <input type="text" id="medicineName" class="form-control" placeholder="Enter medicine name" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="dosage">Dosage</label>
+                    <input type="text" id="dosage" class="form-control" placeholder="e.g., 500mg, 1 tablet, 5ml" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Timings (When to take medicine)</label>
+                    <div class="time-slots-container" id="timeSlots">
+                        <div class="time-slot">
+                            <input type="time" class="form-control" required>
+                            <button type="button" class="remove-time-btn" onclick="removeTimeSlot(this)">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <button type="button" class="btn btn-secondary" onclick="addTimeSlot()" style="margin-top: 10px; width: 100%;">
+                        <i class="fas fa-plus"></i> Add Time
+                    </button>
+                </div>
+
+                <div class="form-group">
+                    <label>Duration</label>
+                    <div class="duration-options">
+                        <div class="duration-option" onclick="selectDuration(this, 7)">7 days</div>
+                        <div class="duration-option" onclick="selectDuration(this, 14)">14 days</div>
+                        <div class="duration-option" onclick="selectDuration(this, 30)">30 days</div>
+                        <div class="duration-option" onclick="selectDuration(this, -1)">Continuous</div>
+                    </div>
+                    <input type="hidden" id="duration" value="7">
+                </div>
+
+                <div class="form-group">
+                    <label for="cause">Reason for Medication</label>
+                    <textarea id="cause" class="form-control" rows="3" placeholder="e.g., High blood pressure, Diabetes management, Pain relief" required></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="instructions">Special Instructions</label>
+                    <textarea id="instructions" class="form-control" rows="2" placeholder="e.g., Take with food, Avoid alcohol, Store in refrigerator"></textarea>
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="window.location.href='healthed.html'">
+                        Cancel
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Save Medicine
+                    </button>
+                </div>
+            </form>
+        </div>
+    </main>
+
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-spinner"></div>
+    </div>
+
+    <script>
+        let selectedDuration = 7;
+
+        function addTimeSlot() {
+            const container = document.getElementById('timeSlots');
+            const timeSlot = document.createElement('div');
+            timeSlot.className = 'time-slot';
+            timeSlot.innerHTML = `
+                <input type="time" class="form-control" required>
+                <button type="button" class="remove-time-btn" onclick="removeTimeSlot(this)">
+                    <i class="fas fa-times"></i>
+                </button>
+            `;
+            container.appendChild(timeSlot);
+        }
+
+        function removeTimeSlot(button) {
+            const timeSlots = document.querySelectorAll('.time-slot');
+            if (timeSlots.length > 1) {
+                button.parentElement.remove();
+            } else {
+                showToast('At least one time slot is required', 'error');
+            }
+        }
+
+        function selectDuration(element, days) {
+            document.querySelectorAll('.duration-option').forEach(opt => {
+                opt.classList.remove('selected');
+            });
+            element.classList.add('selected');
+            selectedDuration = days;
+            document.getElementById('duration').value = days;
+        }
+
+        function showToast(message, type = 'success') {
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.innerHTML = `
+                <div>
+                    <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i>
+                </div>
+                <div>
+                    <h4 style="margin: 0; font-weight: 600;">${type === 'success' ? 'Success' : 'Error'}</h4>
+                    <p style="margin: 5px 0 0 0; font-size: 0.9rem;">${message}</p>
+                </div>
+            `;
+            document.body.appendChild(toast);
+            setTimeout(() => {
+                toast.style.animation = 'slideOutRight 0.3s ease';
+                setTimeout(() => toast.remove(), 300);
+            }, 5000);
+        }
+
+        function showLoading() {
+            document.getElementById('loadingOverlay').classList.add('active');
+        }
+
+        function hideLoading() {
+            document.getElementById('loadingOverlay').classList.remove('active');
+        }
+
+        function formatTimeForDisplay(timeString) {
+            const [hours, minutes] = timeString.split(':');
+            const hour = parseInt(hours);
+            const ampm = hour >= 12 ? 'PM' : 'AM';
+            const displayHour = hour % 12 || 12;
+            return `${displayHour}:${minutes} ${ampm}`;
+        }
+
+        function calculateSchedule(duration) {
+            const schedule = [];
+            const startDate = new Date();
+            
+            if (duration === -1) {
+                for (let i = 0; i < 365; i++) {
+                    const date = new Date(startDate);
+                    date.setDate(startDate.getDate() + i);
+                    schedule.push(date.toISOString().split('T')[0]);
+                }
+            } else {
+                for (let i = 0; i < duration; i++) {
+                    const date = new Date(startDate);
+                    date.setDate(startDate.getDate() + i);
+                    schedule.push(date.toISOString().split('T')[0]);
+                }
+            }
+            return schedule;
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            document.querySelector('.duration-option').classList.add('selected');
+        });
+
+        document.getElementById('medicineForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const patientName = document.getElementById('patientName').value.trim();
+            const medicineName = document.getElementById('medicineName').value.trim();
+            const dosage = document.getElementById('dosage').value.trim();
+            const timings = Array.from(document.querySelectorAll('#timeSlots input')).map(input => input.value);
+            const cause = document.getElementById('cause').value.trim();
+            
+            const validTimings = timings.filter(time => time);
+            if (!patientName || !medicineName || !dosage || validTimings.length === 0 || !cause) {
+                showToast('Please fill all required fields', 'error');
+                return;
+            }
+            
+            showLoading();
+            
+            const medicineData = {
+                id: Date.now().toString(),
+                patientName: patientName,
+                name: medicineName,
+                dosage: dosage,
+                time: validTimings.map(formatTimeForDisplay).join(', '),
+                rawTimes: validTimings,
+                for: cause,
+                instructions: document.getElementById('instructions').value.trim(),
+                duration: selectedDuration,
+                schedule: calculateSchedule(selectedDuration),
+                startDate: new Date().toISOString(),
+                status: 'active',
+                adherence: 0,
+                streak: 0
+            };
+            
+            try {
+                let medicines = JSON.parse(localStorage.getItem('medicines') || '[]');
+                
+                const isDuplicate = medicines.some(med => 
+                    med.name.toLowerCase() === medicineName.toLowerCase() && 
+                    med.patientName.toLowerCase() === patientName.toLowerCase()
+                );
+                
+                if (isDuplicate) {
+                    showToast('This medicine is already added for this patient', 'error');
+                    hideLoading();
+                    return;
+                }
+                
+                medicines.push(medicineData);
+                localStorage.setItem('medicines', JSON.stringify(medicines));
+                
+                hideLoading();
+                showToast(`Medicine "${medicineName}" added successfully!`, 'success');
+                
+                setTimeout(() => {
+                    window.location.href = 'medication-tracker.html';
+                }, 2000);
+                
+            } catch (error) {
+                hideLoading();
+                showToast('Error saving medicine', 'error');
+            }
+        });
+
+        // Set nav link style
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.className = 'nav-link text-gray-600 hover:text-arogya-light-blue px-3 py-2 rounded-md text-base font-medium transition duration-150';
+        });
+    </script>
+</body>
+</html>

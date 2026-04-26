@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Symptom Checker</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'arogya-blue': '#1e40af', // A deep, strong blue
+                        'arogya-light-blue': '#3b82f6', // A bright, primary blue
+                        'arogya-bg-light': '#f9fafb', // Very light background
+                        'arogya-extra-light': '#eff6ff', // A very light blue for section backgrounds
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+  
+  <style>
+    body {
+      font-family: "Segoe UI", Arial, sans-serif;
+      background: #f5f7ff;
+      margin: 0;
+      padding: 0;
+    }
+    .container {
+      max-width: 950px;
+      margin: 40px auto;
+      background: #fff;
+      padding: 40px;
+      border-radius: 16px;
+      box-shadow: 0 6px 16px rgba(0,0,0,0.08);
+    }
+    h1 {
+      text-align: center;
+      font-size: 30px;
+      margin-bottom: 8px;
+      color: #111;
+    }
+    p.subtitle {
+      text-align: center;
+      color: #666;
+      margin-bottom: 25px;
+      font-size: 15px;
+    }
+    .steps {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-bottom: 30px;
+    }
+    .step {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: #e5e7eb;
+      color: #444;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-weight: bold;
+      margin: 0 12px;
+      transition: 0.3s;
+    }
+    .step.active {
+      background: #2563eb;
+      color: #fff;
+    }
+    .bar {
+      height: 2px;
+      width: 40px;
+      background: #e5e7eb;
+      transition: 0.3s;
+    }
+    .bar.active {
+      background: #2563eb;
+    }
+    h2 {
+      text-align: center;
+      margin-bottom: 20px;
+      color: #111;
+    }
+    .symptom-group {
+      margin: 20px 0;
+    }
+    .symptom-group h3 {
+      font-size: 17px;
+      margin-bottom: 12px;
+      color: #333;
+    }
+    .symptoms {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .symptom {
+      flex: 1 1 calc(33% - 12px);
+      padding: 12px;
+      text-align: center;
+      border: 1px solid #d1d5db;
+      border-radius: 10px;
+      background: #f9fafb;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .symptom:hover {
+      background: #eff6ff;
+      border-color: #2563eb;
+    }
+    .symptom.selected {
+      background: #2563eb;
+      color: #fff;
+      border-color: #2563eb;
+    }
+    .btn {
+      display: block;
+      margin: 30px auto 10px;
+      padding: 12px 28px;
+      font-size: 16px;
+      font-weight: 500;
+      background: #2563eb;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+    .btn:hover {
+      background: #1e4ed8;
+    }
+    .results, .confirmation {
+      background: #f9fafb;
+      padding: 20px;
+      border-radius: 12px;
+      margin-top: 25px;
+      display: none;
+    }
+    .results h3, .confirmation h3 {
+      margin: 10px 0;
+      color: #222;
+    }
+    ul {
+      margin: 10px 0 0 18px;
+      color: #444;
+    }
+    .urgency {
+      font-weight: bold;
+      padding: 2px 6px;
+      border-radius: 6px;
+      font-size: 13px;
+    }
+    .mild { background: #d1fae5; color: #065f46; }
+    .moderate { background: #fef3c7; color: #92400e; }
+    .severe { background: #fee2e2; color: #991b1b; }
+    .emergency { background: #fecaca; color: #7f1d1d; }
+    .disclaimer {
+      margin-top: 25px;
+      font-size: 13px;
+      color: #444;
+      border-top: 1px solid #eee;
+      padding-top: 12px;
+    }
+  </style>
+</head>
+<body>
+  <nav class="sticky top-0 bg-white shadow-md z-[1000]">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                
+                <div class="flex items-center">
+                    <a href="index.html" class="flex items-center text-2xl font-extrabold text-arogya-blue hover:text-arogya-light-blue transition duration-150" style="text-decoration: none !important;">
+                        <svg class="h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0zM12 4v2m-3 7h6m-3-3v6" />
+                        </svg>
+                        AarogyaLink
+                    </a>
+                </div>
+
+                <div class="hidden md:flex items-center space-x-1">
+                    <a href="index.html" class="text-gray-600 hover:text-arogya-light-blue px-3 py-2 rounded-md text-sm font-semibold transition duration-150" style="text-decoration: none !important;">Home</a>
+                    <a href="index.html#why-choose" class="text-gray-600 hover:text-arogya-light-blue px-3 py-2 rounded-md text-sm font-semibold transition duration-150" style="text-decoration: none !important;">About</a>
+                    
+                    <div class="relative h-full flex items-center nav-dropdown-container">
+                        <button id="servicesBtn" class="nav-active px-3 py-2 rounded-md text-sm flex items-center bg-transparent border-0 outline-none cursor-pointer">
+                            Services
+                            <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </button>
+
+                        <div id="servicesMenu" class="nav-dropdown-menu absolute left-0 w-64 bg-white border border-gray-100 rounded-xl shadow-2xl z-[1100]" style="top: 100%; display: none; margin-top: -5px;">
+                            <div class="py-2 px-1">
+                                <a href="services.html" class="block px-4 py-2.5 text-sm text-arogya-blue bg-arogya-extra-light font-bold rounded-lg" style="text-decoration: none !important;">🏥 All Services</a>
+                                <div class="border-t border-gray-100 my-1 mx-2"></div>
+                                <a href="aisymptomhealth.html" class="block px-4 py-2.5 text-sm text-gray-700 hover:bg-arogya-extra-light hover:text-arogya-blue rounded-lg" style="text-decoration: none !important;">🤖 AI Symptom Checker</a>
+                                <a href="telemedicine-map.html" class="block px-4 py-2.5 text-sm text-gray-700 hover:bg-arogya-extra-light hover:text-arogya-blue rounded-lg" style="text-decoration: none !important;">📍 Nearest Care Map</a>
+                                <a href="consultation.html" class="block px-4 py-2.5 text-sm text-gray-700 hover:bg-arogya-extra-light hover:text-arogya-blue rounded-lg" style="text-decoration: none !important;">📅 Book Consultation</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <a href="healthed.html" class="text-gray-600 hover:text-arogya-light-blue px-3 py-2 rounded-md text-sm font-semibold transition duration-150" style="text-decoration: none !important;">HealthEd</a>
+                    <a href="medicine-management.html" class="text-gray-600 hover:text-arogya-light-blue px-3 py-2 rounded-md text-sm font-semibold transition duration-150" style="text-decoration: none !important;">MediGear</a>
+                    <a href="contact.html" class="text-gray-600 hover:text-arogya-light-blue px-3 py-2 rounded-md text-sm font-semibold transition duration-150" style="text-decoration: none !important;">Contact Us</a>
+                </div>
+
+                <div class="flex items-center space-x-4">
+                    <button onclick="handleEmergency()" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-full shadow-md transition duration-150 transform hover:scale-105 text-sm border-0">
+                        Emergency
+                    </button>
+                    <a href="dashboard.html" class="p-2 rounded-full text-arogya-blue hover:bg-arogya-blue/10">
+                        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                        </svg>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+  <div class="container">
+    <h1>AI-Powered Symptom Checker</h1>
+    <p class="subtitle">Get instant preliminary diagnosis suggestions with urgency levels and remedies. <br>Optimized for offline & low-bandwidth use.</p>
+
+    <div class="steps">
+      <div class="step active" id="step1">1</div>
+      <div class="bar" id="bar1"></div>
+      <div class="step" id="step2">2</div>
+      <div class="bar" id="bar2"></div>
+      <div class="step" id="step3">3</div>
+    </div>
+
+    <div id="step1Content">
+      <h2>Select Your Symptoms</h2>
+
+      <div class="symptom-group">
+        <h3>General</h3>
+        <div class="symptoms">
+          <div class="symptom">Fever</div>
+          <div class="symptom">Fatigue</div>
+          <div class="symptom">Headache</div>
+          <div class="symptom">Body ache</div>
+          <div class="symptom">Weakness</div>
+          <div class="symptom">Loss of appetite</div>
+        </div>
+      </div>
+
+      <div class="symptom-group">
+        <h3>Respiratory</h3>
+        <div class="symptoms">
+          <div class="symptom">Cough</div>
+          <div class="symptom">Shortness of breath</div>
+          <div class="symptom">Chest pain</div>
+          <div class="symptom">Sore throat</div>
+          <div class="symptom">Runny nose</div>
+          <div class="symptom">Sneezing</div>
+        </div>
+      </div>
+
+      <div class="symptom-group">
+        <h3>Digestive</h3>
+        <div class="symptoms">
+          <div class="symptom">Nausea</div>
+          <div class="symptom">Vomiting</div>
+          <div class="symptom">Diarrhea</div>
+          <div class="symptom">Stomach pain</div>
+          <div class="symptom">Constipation</div>
+          <div class="symptom">Bloating</div>
+        </div>
+      </div>
+
+      <div class="symptom-group">
+        <h3>Neurological</h3>
+        <div class="symptoms">
+          <div class="symptom">Dizziness</div>
+          <div class="symptom">Confusion</div>
+          <div class="symptom">Memory problems</div>
+          <div class="symptom">Numbness</div>
+          <div class="symptom">Tingling</div>
+          <div class="symptom">Seizures</div>
+        </div>
+      </div>
+
+      <div class="symptom-group">
+        <h3>Cardiovascular</h3>
+        <div class="symptoms">
+          <div class="symptom">Chest pressure</div>
+          <div class="symptom">Irregular heartbeat</div>
+          <div class="symptom">Fainting</div>
+          <div class="symptom">Swelling in legs</div>
+          <div class="symptom">Shortness of breath on exertion</div>
+          <div class="symptom">High blood pressure</div>
+        </div>
+      </div>
+
+      <div class="symptom-group">
+        <h3>Dermatological</h3>
+        <div class="symptoms">
+          <div class="symptom">Rash</div>
+          <div class="symptom">Itching</div>
+          <div class="symptom">Redness</div>
+          <div class="symptom">Swelling</div>
+          <div class="symptom">Skin dryness</div>
+          <div class="symptom">Hives</div>
+        </div>
+      </div>
+
+      <button class="btn" id="nextToStep2">Next →</button>
+    </div>
+
+    <div id="step2Content" style="display: none;">
+      <h2>Confirm Your Selected Symptoms</h2>
+      <div class="confirmation">
+        <h3>Selected Symptoms:</h3>
+        <ul id="selectedSymptomsList"></ul>
+      </div>
+      <button class="btn" id="backToStep1">← Back</button>
+      <button class="btn" id="nextToStep3">Analyze Symptoms →</button>
+    </div>
+
+    <div id="step3Content" style="display: none;">
+      <h2>Preliminary Diagnosis</h2>
+      <div class="results">
+        <p id="disease"></p>
+        <ul id="remedies"></ul>
+      </div>
+      <button class="btn" id="restartBtn">← Start Over</button>
+    </div>
+
+    <p class="disclaimer">
+      ⚠️ <b>Medical Disclaimer:</b> This AI symptom checker provides only preliminary health information 
+      and must not replace professional medical advice, diagnosis, or treatment. 
+      Always consult with a qualified doctor for medical concerns.
+    </p>
+  </div>
+
+  <script>
+    // --- DROPDOWN FUNCTIONALITY ---
+    const servicesBtn = document.getElementById('servicesBtn');
+    const servicesMenu = document.getElementById('servicesMenu');
+
+    servicesBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const isHidden = servicesMenu.style.display === 'none';
+        servicesMenu.style.display = isHidden ? 'block' : 'none';
+    });
+
+    // Close menu when clicking anywhere else
+    window.addEventListener('click', () => {
+        servicesMenu.style.display = 'none';
+    });
+
+
+    // --- SYMPTOM CHECKER LOGIC ---
+    const symptoms = document.querySelectorAll('.symptom');
+    let selectedSymptoms = [];
+
+    symptoms.forEach(symptom => {
+      symptom.addEventListener('click', () => {
+        symptom.classList.toggle('selected');
+        const text = symptom.textContent;
+        if (selectedSymptoms.includes(text)) {
+          selectedSymptoms = selectedSymptoms.filter(s => s !== text);
+        } else {
+          selectedSymptoms.push(text);
+        }
+      });
+    });
+
+    const diagnosisRules = {
+      "Flu": {
+        symptoms: ["Fever", "Cough", "Fatigue", "Body ache", "Headache"],
+        remedies: ["Rest well", "Stay hydrated", "Take paracetamol if needed"],
+        urgency: "Moderate"
+      },
+      "Common Cold": {
+        symptoms: ["Runny nose", "Sneezing", "Sore throat", "Cough"],
+        remedies: ["Drink warm fluids", "Rest", "Steam inhalation"],
+        urgency: "Mild"
+      },
+      "COVID-19": {
+        symptoms: ["Fever", "Cough", "Shortness of breath", "Loss of appetite", "Fatigue"],
+        remedies: ["Isolate yourself", "Stay hydrated", "Monitor oxygen levels"],
+        urgency: "Severe"
+      },
+      "Migraine": {
+        symptoms: ["Headache", "Nausea", "Vomiting"],
+        remedies: ["Rest in a quiet dark room", "Stay hydrated"],
+        urgency: "Moderate"
+      },
+      "Food Poisoning": {
+        symptoms: ["Nausea", "Vomiting", "Diarrhea", "Stomach pain"],
+        remedies: ["Drink oral rehydration solution", "Avoid solid food", "Rest"],
+        urgency: "Moderate"
+      },
+      "Stroke": {
+        symptoms: ["Confusion", "Dizziness", "Numbness", "Tingling", "Seizures", "Memory problems"],
+        remedies: ["Call emergency services immediately", "Do not give food/drink"],
+        urgency: "Emergency"
+      },
+      "Epilepsy": {
+        symptoms: ["Seizures", "Confusion", "Memory problems"],
+        remedies: ["Consult a neurologist", "Take prescribed anti-seizure meds"],
+        urgency: "Severe"
+      },
+      "Heart Attack": {
+        symptoms: ["Chest pain", "Chest pressure", "Shortness of breath", "Fainting", "Irregular heartbeat"],
+        remedies: ["Call emergency immediately", "Chew aspirin if available"],
+        urgency: "Emergency"
+      },
+      "Hypertension": {
+        symptoms: ["High blood pressure", "Headache", "Fatigue"],
+        remedies: ["Monitor blood pressure regularly", "Limit salt intake"],
+        urgency: "Moderate"
+      },
+      "Allergic Reaction": {
+        symptoms: ["Rash", "Itching", "Hives", "Redness", "Swelling"],
+        remedies: ["Take antihistamines", "Avoid allergen"],
+        urgency: "Moderate"
+      },
+      "Eczema": {
+        symptoms: ["Skin dryness", "Itching", "Redness"],
+        remedies: ["Use moisturizing creams", "Apply medicated ointments"],
+        urgency: "Mild"
+      }
+    };
+
+    // Navigation
+    const step1Content = document.getElementById('step1Content');
+    const step2Content = document.getElementById('step2Content');
+    const step3Content = document.getElementById('step3Content');
+    const step1 = document.getElementById('step1');
+    const step2 = document.getElementById('step2');
+    const step3 = document.getElementById('step3');
+    const bar1 = document.getElementById('bar1');
+    const bar2 = document.getElementById('bar2');
+
+    document.getElementById('nextToStep2').addEventListener('click', () => {
+      if (selectedSymptoms.length === 0) {
+        alert("Please select at least one symptom!");
+        return;
+      }
+      step1Content.style.display = 'none';
+      step2Content.style.display = 'block';
+      document.getElementById('selectedSymptomsList').innerHTML =
+        selectedSymptoms.map(s => `<li>${s}</li>`).join("");
+      step1.classList.remove('active');
+      step2.classList.add('active');
+      bar1.classList.add('active');
+    });
+
+    document.getElementById('backToStep1').addEventListener('click', () => {
+      step2Content.style.display = 'none';
+      step1Content.style.display = 'block';
+      step2.classList.remove('active');
+      step1.classList.add('active');
+      bar1.classList.remove('active');
+    });
+
+    document.getElementById('nextToStep3').addEventListener('click', () => {
+      step2Content.style.display = 'none';
+      step3Content.style.display = 'block';
+      step2.classList.remove('active');
+      step3.classList.add('active');
+      bar2.classList.add('active');
+
+      let diseaseMatches = [];
+      for (const [disease, data] of Object.entries(diagnosisRules)) {
+        const matchCount = data.symptoms.filter(s => selectedSymptoms.includes(s)).length;
+        if (matchCount > 0) {
+          const score = Math.round((matchCount / data.symptoms.length) * 100);
+          diseaseMatches.push({ disease, score, remedies: data.remedies, urgency: data.urgency });
+        }
+      }
+      diseaseMatches.sort((a, b) => b.score - a.score);
+
+      const diseaseEl = document.getElementById('disease');
+      const remediesEl = document.getElementById('remedies');
+
+      if (diseaseMatches.length === 0) {
+        diseaseEl.textContent = "⚠️ No clear match found. Please consult a doctor.";
+        remediesEl.innerHTML = "";
+      } else {
+        diseaseEl.innerHTML = "Possible conditions based on your symptoms:";
+        remediesEl.innerHTML = diseaseMatches.slice(0, 3).map(match => `
+          <li>
+            <b>${match.disease}</b> – ${match.score}% match 
+            <span class="urgency ${match.urgency.toLowerCase()}">${match.urgency}</span>
+            <ul>${match.remedies.map(r => `<li>${r}</li>`).join("")}</ul>
+          </li>
+        `).join("");
+      }
+      document.querySelector('.results').style.display = 'block';
+    });
+
+    document.getElementById('restartBtn').addEventListener('click', () => {
+      step3Content.style.display = 'none';
+      step1Content.style.display = 'block';
+      selectedSymptoms = [];
+      symptoms.forEach(s => s.classList.remove('selected'));
+      document.getElementById('disease').textContent = "";
+      document.getElementById('remedies').innerHTML = "";
+      step3.classList.remove('active');
+      step2.classList.remove('active');
+      step1.classList.add('active');
+      bar1.classList.remove('active');
+      bar2.classList.remove('active');
+    });
+
+    // Placeholder for Emergency handler
+    function handleEmergency() {
+        alert("Emergency services are being contacted. Please stay calm.");
+    }
+  </script>
+</body>
+</html>

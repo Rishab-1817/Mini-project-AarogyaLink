@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Appointment Booking (Symptom-based)</title>
+  <link rel="stylesheet" href="appointment.css" />
+  <style>
+    :root {
+      --arogya-blue: #1e40af;
+      --arogya-light-blue: #93c5fd;
+      --arogya-text: #0f172a;
+      --nav-bg: #ffffff;
+      --nav-border: #e2e8f0;
+    }
+    nav.main-nav {
+      position: sticky;
+      top: 0;
+      background: var(--nav-bg);
+      z-index: 40;
+      box-shadow: 0 2px 10px rgba(15, 23, 42, 0.08);
+      border-bottom: 1px solid var(--nav-border);
+    }
+    nav.main-nav .container-nav {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      min-height: 72px;
+      flex-wrap: wrap;
+    }
+    .brand {
+      color: var(--arogya-blue);
+      font-size: 1.8rem;
+      font-weight: 800;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+    .brand i {
+      font-size: 1.45rem;
+      color: var(--arogya-blue);
+    }
+    .nav-links {
+      display: flex;
+      gap: 14px;
+      flex-wrap: wrap;
+      align-items: center;
+      margin-left: 1rem;
+    }
+    .nav-links a {
+      color: var(--arogya-text);
+      font-weight: 600;
+      font-size: 0.95rem;
+      letter-spacing: 0.01em;
+      text-decoration: none;
+      padding: 8px 11px;
+      border-radius: 8px;
+      transition: all 0.18s ease;
+      white-space: nowrap;
+    }
+    .nav-links a:hover {
+      color: var(--arogya-blue);
+      background: #eff6ff;
+    }
+    .nav-links a.active {
+      color: #1e3a8a;
+      background: #dbeafe;
+    }
+    .emergency-btn {
+      background: #dc2626;
+      color: #fff;
+      border: 0;
+      border-radius: 999px;
+      font-weight: 700;
+      padding: 0.65rem 1.2rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      cursor: pointer;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .emergency-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 8px 18px rgba(220, 38, 38, 0.25);
+    }
+    .emergency-btn i { font-size: 0.92rem; }
+    .mobile-menu-trigger { display: none; }
+    @media (max-width: 940px) {
+      .nav-links { display: none; width: 100%; margin-top: 10px; }
+      .nav-links.mobile-open { display: flex; flex-direction: column; background: #fff; border-top: 1px solid #e2e8f0; padding: 10px 0; }
+      .mobile-menu-trigger { display: inline-flex; border:1px solid #cbd5e1; background:#f8fafc; padding:8px 10px; border-radius:8px; cursor:pointer; align-items:center; }
+    }
+  </style>
+</head>
+<body>
+  <!-- Navigation Bar -->
+  <nav class="main-nav">
+    <div class="container-nav">
+      <a href="index.html" class="brand"><i class="fas fa-heartbeat"></i> AarogyaLink</a>
+      <div id="nav-links" class="nav-links">
+        <a href="services.html" class="nav-link">Services</a>
+        <!-- <a href="medicine-management.html" class="nav-link">MediGear</a>
+        <a href="healthed.html" class="nav-link">HealthEd</a>
+        <a href="telemedicine-map.html" class="nav-link">Nearest Care Map</a>
+        <a href="aisymptomhealth.html" class="nav-link">AI Symptom Checker</a> -->
+        <a href="appointment.html" class="nav-link active">Appointments</a>
+        <a href="videoconsultation.html" class="nav-link">Video Consultations</a>
+        <a href="familyhealthtree.html" class="nav-link">Familytree</a>
+        <a href="contact.html" class="nav-link">Contact Us</a>  
+      </div>
+
+    </div>
+  </nav>
+
+  <script>
+    const mobileButton = document.getElementById('mobile-menu-button');
+    const navLinks = document.getElementById('nav-links');
+
+    if (mobileButton && navLinks) {
+      mobileButton.addEventListener('click', () => {
+        navLinks.classList.toggle('mobile-open');
+      });
+    }
+
+    // Ensure active styling works if class set server-side
+    document.querySelectorAll('.nav-link').forEach(link => {
+      if (link.classList.contains('active')) {
+        link.classList.add('active');
+      }
+    });
+  </script>
+
+  <div class="app">
+    <div id="appt" class="page">
+      <div class="card">
+        <div class="card-title">📅 Book Appointment</div>
+
+        <label for="symptomInput">Describe symptoms (e.g. fever, chest pain, sugar issue):</label>
+        <textarea id="symptomInput" rows="3" placeholder="e.g. Bukhar hai aur thakaan mehsoos ho rahi hai..."></textarea>
+
+        <button class="btn btn-outline" onclick="findDoctorsBySymptoms()" style="margin-bottom:10px">
+          🔎 <strong>Find Doctors</strong>
+        </button>
+
+        <div id="symptomMatchResult" style="min-height:20px; font-size:13px;color:#2E7D32; margin-bottom:10px;"></div>
+
+        <label>Consultation Type:</label>
+        <select id="apptType">
+          <option>Video Consultation</option>
+          <option>Home Sample Collection</option>
+          <option>Hospital Visit</option>
+        </select>
+
+        <label>Select Doctor:</label>
+        <select id="docSelect"></select>
+
+        <label>Select Date:</label>
+        <input type="date" id="apptDate" />
+
+        <label>Select Time:</label>
+        <select id="apptTime">
+          <option>09:00 AM</option><option>10:00 AM</option><option>10:30 AM</option>
+          <option>11:00 AM</option><option>02:00 PM</option><option>04:00 PM</option>
+        </select>
+
+        <button class="btn btn-primary" id="bookBtn" onclick="bookAppt()">✅ Confirm Appointment</button>
+
+        <div class="confirm-box" id="apptConfirm">
+          <div style="font-size:16px;font-weight:600;color:#2E7D32;margin-bottom:8px">✅ Appointment Confirmed!</div>
+          <div id="apptReceipt" style="font-size:13px;line-height:1.8;color:#1A1A2E"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

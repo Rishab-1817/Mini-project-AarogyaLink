@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AIDS Awareness Quiz - AarogyaLink</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://kit.fontawesome.com/a2e0c3c6f0.js" crossorigin="anonymous"></script>
+  <style>
+   body {
+    font-family: Arial, sans-serif;
+    background: url('red.png') repeat center center fixed;
+    background-size: cover;
+    margin: 0;
+    padding: 0;
+    }
+
+    .quiz-container {
+    max-width: 800px;
+    margin: 60px auto;
+    padding: 25px;
+    border-radius: 15px;
+    background: rgba(255, 255, 255, 0.9); /* semi-transparent white so bg shows */
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    }
+    h2 { text-align:center; margin-bottom: 20px; }
+    .banner { text-align:center; margin-bottom:20px; }
+    .banner img { max-width:120px; }
+    .progress-bar { width:100%; background:#e6e6e6; border-radius:8px; overflow:hidden; margin:15px 0 25px; }
+    .progress { height:18px; width:0; background:#28a745; text-align:center; color:white; font-size:0.8rem; transition: width 0.4s ease; }
+    .question { margin: 20px 0; padding: 15px; background: white; border-radius: 10px; border: 1px solid #ddd; }
+    .question h4 { margin-bottom: 10px; }
+    .option { display:block; margin: 5px 0; }
+    .btn-submit { display:block; margin: 20px auto; padding: 10px 20px; border:none; border-radius: 6px; background:#007bff; color:white; cursor:pointer; font-size:1rem; }
+    .correct { background: #d4edda; }
+    .wrong { background: #f8d7da; }
+    .explanation { font-size:0.9rem; margin-top:5px; color:#333; }
+    #result { text-align:center; margin-top:20px; font-size:1.2rem; }
+    .badge { font-size: 1.5rem; margin-top: 10px; }
+  </style>
+</head>
+<body>
+
+  <header class="header">
+    <div class="container nav">
+      <div class="logo"><i class="fas fa-virus"></i> AarogyaLink</div>
+      <div class="nav-controls">
+        <a href="quiz.html" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Back</a>
+      </div>
+    </div>
+  </header>
+
+  <div class="quiz-container">
+    <div class="banner">
+      <img src="aids.png" alt="AIDS Icon">
+      <h2>🧬 AIDS Awareness Quiz</h2>
+    </div>
+
+    <div class="progress-bar">
+      <div id="progress" class="progress">0%</div>
+    </div>
+
+    <form id="quizForm"></form>
+    <button class="btn-submit" onclick="submitQuiz(event)">Submit Quiz</button>
+    <div id="result"></div>
+  </div>
+
+  <script>
+    const quizData = [
+      { question: "Q1. What is the virus that causes AIDS?", options: ["HIV", "HPV", "HCV", "HSV"], correct: 0, explanation: "HIV is the virus that leads to AIDS." },
+      { question: "Q2. Can HIV be transmitted by casual contact?", options: ["Yes", "No", "Sometimes", "Depends"], correct: 1, explanation: "Casual contact does not transmit HIV." },
+      { question: "Q3. Which body fluids can transmit HIV?", options: ["Blood, semen, vaginal fluids", "Saliva, sweat", "Tears", "Urine"], correct: 0, explanation: "HIV is transmitted through certain body fluids like blood and semen." },
+      { question: "Q4. Is there a cure for HIV/AIDS?", options: ["Yes", "No", "Only in children", "Sometimes"], correct: 1, explanation: "Currently, there is no cure, only treatment to manage it." },
+      { question: "Q5. What is PrEP?", options: ["Vaccine", "Preventive medicine", "Virus type", "None"], correct: 1, explanation: "PrEP is a preventive medication for high-risk individuals." },
+      { question: "Q6. Can using condoms reduce HIV risk?", options: ["Yes", "No", "Only sometimes", "Never"], correct: 0, explanation: "Condoms are highly effective in reducing HIV transmission." },
+      { question: "Q7. Is mother-to-child transmission possible?", options: ["Yes", "No", "Rarely", "Not proven"], correct: 0, explanation: "HIV can be transmitted from mother to child during pregnancy, birth, or breastfeeding." },
+      { question: "Q8. Should HIV-positive individuals take ART?", options: ["Yes", "No", "Optional", "Depends"], correct: 0, explanation: "ART is essential for managing HIV infection." },
+      { question: "Q9. Can HIV-positive individuals live a normal life?", options: ["Yes", "No", "Depends on age", "Rarely"], correct: 0, explanation: "With treatment, they can live a healthy life." },
+      { question: "Q10. Which of these is a myth about HIV?", options: ["Sharing food spreads HIV", "Unprotected sex spreads HIV", "Blood transfusion spreads HIV", "Mother-to-child can transmit HIV"], correct: 0, explanation: "HIV is not transmitted by sharing food." }
+    ];
+
+    const quizForm = document.getElementById("quizForm");
+    const progressBar = document.getElementById("progress");
+
+    quizData.forEach((q, index) => {
+      const questionBlock = document.createElement("div");
+      questionBlock.classList.add("question");
+      questionBlock.innerHTML = `
+        <h4>${q.question}</h4>
+        ${q.options.map((opt, i) => `
+          <label class="option">
+            <input type="radio" name="q${index}" value="${i}" onchange="updateProgress()"> ${opt}
+          </label>
+        `).join("")}
+        <div id="exp${index}" class="explanation" style="display:none;"></div>
+      `;
+      quizForm.appendChild(questionBlock);
+    });
+
+    function updateProgress() {
+      const answered = quizData.filter((_, i) => document.querySelector(`input[name="q${i}"]:checked`)).length;
+      const total = quizData.length;
+      const percent = Math.round((answered/total)*100);
+      progressBar.style.width = percent + "%";
+      progressBar.textContent = percent + "%";
+    }
+
+    function submitQuiz(e) {
+      e.preventDefault();
+      let score = 0;
+      quizData.forEach((q, i) => {
+        const selected = document.querySelector(`input[name="q${i}"]:checked`);
+        const explanation = document.getElementById(`exp${i}`);
+        if (selected) {
+          if (parseInt(selected.value) === q.correct) {
+            score++;
+            selected.parentElement.classList.add("correct");
+            explanation.innerHTML = "✅ Correct! " + q.explanation;
+          } else {
+            selected.parentElement.classList.add("wrong");
+            explanation.innerHTML = "❌ Wrong! " + q.explanation;
+          }
+        } else {
+          explanation.innerHTML = "⚠️ Not Attempted. " + q.explanation;
+        }
+        explanation.style.display = "block";
+      });
+
+      let badge = "";
+      if(score >= 8) badge = "🥇 Gold Health Hero!";
+      else if(score >= 5) badge = "🥈 Silver Health Learner!";
+      else badge = "🥉 Bronze - Keep practicing!";
+
+      document.getElementById("result").innerHTML = 
+        `<strong>Your Score: ${score}/${quizData.length}</strong><br>
+         <div class="badge">${badge}</div>`;
+    }
+  </script>
+
+</body>
+</html>

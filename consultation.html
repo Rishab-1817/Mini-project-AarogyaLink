@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book Your Consultation</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'arogya-blue': '#1e40af',
+                        'arogya-light-blue': '#3b82f6',
+                        'arogya-bg-light': '#f9fafb',
+                        'arogya-extra-light': '#eff6ff',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Inter', sans-serif; background: #f4f9ff; margin: 0; padding: 0; }
+        
+        /* Form Specific Custom Styles */
+        .form-input-focus:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+        
+        /* Dropdown Visibility */
+        .show-dropdown { display: block !important; }
+        
+        /* Vapi Widget Tweaks */
+        vapi-widget {
+            --vapi-primary-color: #1e40af;
+            --vapi-font: 'Inter', sans-serif;
+            border-radius: 16px !important;
+            box-shadow: 0 8px 26px rgba(0,0,0,0.25);
+        }
+
+        #chatbot-container {
+            position: fixed; bottom: 90px; right: 20px;
+            width: 360px; height: 560px; border-radius: 16px;
+            overflow: hidden; box-shadow: 0 8px 26px rgba(0,0,0,0.25);
+            z-index: 9999; display: none; background: #fff;
+            border: 2px solid #1e40af;
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="sticky top-0 bg-white shadow-md z-[1000]">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <a href="index.html" class="flex items-center text-2xl font-extrabold text-arogya-blue hover:text-arogya-light-blue transition duration-150" style="text-decoration: none;">
+                        <svg class="h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0zM12 4v2m-3 7h6m-3-3v6" />
+                        </svg>
+                        AarogyaLink
+                    </a>
+                </div>
+
+                <div class="hidden md:flex items-center space-x-1">
+                    <a href="index.html" class="text-gray-600 hover:text-arogya-light-blue px-3 py-2 rounded-md text-sm font-semibold transition">Home</a>
+                    <a href="index.html#why-choose" class="text-gray-600 hover:text-arogya-light-blue px-3 py-2 rounded-md text-sm font-semibold transition">About</a>
+                    
+                    <div class="relative h-full flex items-center">
+                        <button id="servicesBtn" class="text-gray-600 hover:text-arogya-light-blue px-3 py-2 rounded-md text-sm font-semibold flex items-center bg-transparent border-0 outline-none cursor-pointer">
+                            Services
+                            <svg class="w-4 h-4 ml-1 transition-transform" id="dropdownArrow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </button>
+
+                        <div id="servicesDropdown" class="absolute top-[60px] left-0 w-64 bg-white border border-gray-100 rounded-xl shadow-2xl z-[1100] hidden">
+                            <div class="py-2 px-1">
+                                <a href="services.html" class="block px-4 py-2.5 text-sm text-arogya-blue bg-arogya-extra-light font-bold rounded-lg">🏥 All Services</a>
+                                <div class="border-t border-gray-100 my-1 mx-2"></div>
+                                <a href="aisymptomhealth.html" class="block px-4 py-2.5 text-sm text-gray-700 hover:bg-arogya-extra-light hover:text-arogya-blue rounded-lg">🤖 AI Symptom Checker</a>
+                                <a href="telemedicine-map.html" class="block px-4 py-2.5 text-sm text-gray-700 hover:bg-arogya-extra-light hover:text-arogya-blue rounded-lg">📍 Nearest Care Map</a>
+                                <a href="consultation.html" class="block px-4 py-2.5 text-sm text-gray-700 hover:bg-arogya-extra-light hover:text-arogya-blue rounded-lg">📅 Book Consultation</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <a href="healthed.html" class="text-gray-600 hover:text-arogya-light-blue px-3 py-2 rounded-md text-sm font-semibold transition">HealthEd</a>
+                    <a href="medicine-management.html" class="text-gray-600 hover:text-arogya-light-blue px-3 py-2 rounded-md text-sm font-semibold transition">MediGear</a>
+                    <a href="contact.html" class="text-gray-600 hover:text-arogya-light-blue px-3 py-2 rounded-md text-sm font-semibold transition">Contact Us</a>
+                </div>
+
+                <div class="flex items-center space-x-4">
+                    <button onclick="handleEmergency()" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-full shadow-md transition transform hover:scale-105 text-sm border-0">Emergency</button>
+                    <a href="dashboard.html" class="p-2 rounded-full text-arogya-blue hover:bg-arogya-blue/10">
+                        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                        </svg>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-4xl mx-auto my-10 px-4">
+        <div class="bg-white rounded-2xl shadow-xl overflow-hidden">
+            <div class="bg-arogya-blue p-8 text-center">
+                <h2 class="text-3xl font-bold text-white mb-2">Book Your Consultation</h2>
+                <p class="text-blue-100 max-w-lg mx-auto">Schedule a video consultation with our expert doctors. Available in multiple languages for rural communities.</p>
+            </div>
+
+            <form id="consultationForm" class="p-8 md:p-12 space-y-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="space-y-1">
+                        <label class="text-sm font-bold text-gray-700">Patient Name *</label>
+                        <input type="text" name="patientName" required class="w-full p-3 border border-gray-300 rounded-lg form-input-focus transition" placeholder="Full Name">
+                    </div>
+                    <div class="space-y-1">
+                        <label class="text-sm font-bold text-gray-700">Email Address *</label>
+                        <input type="email" name="email" required class="w-full p-3 border border-gray-300 rounded-lg form-input-focus transition" placeholder="email@example.com">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="space-y-1">
+                        <label class="text-sm font-bold text-gray-700">Phone Number *</label>
+                        <input type="tel" name="phone" placeholder="+91 XXXXX XXXXX" required class="w-full p-3 border border-gray-300 rounded-lg form-input-focus transition">
+                    </div>
+                    <div class="space-y-1">
+                        <label class="text-sm font-bold text-gray-700">Age *</label>
+                        <input type="number" name="age" required class="w-full p-3 border border-gray-300 rounded-lg form-input-focus transition">
+                    </div>
+                    <div class="space-y-1">
+                        <label class="text-sm font-bold text-gray-700">Gender *</label>
+                        <select name="gender" required class="w-full p-3 border border-gray-300 rounded-lg form-input-focus transition bg-white">
+                            <option value="">Select gender</option>
+                            <option>Male</option>
+                            <option>Female</option>
+                            <option>Other</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="space-y-1">
+                        <label class="text-sm font-bold text-gray-700">Preferred Language *</label>
+                        <select name="language" required class="w-full p-3 border border-gray-300 rounded-lg form-input-focus transition bg-white">
+                            <option value="">Select language</option>
+                            <option>English</option>
+                            <option>Hindi</option>
+                            <option>Tamil</option>
+                            <option>Telugu</option>
+                            <option>Bengali</option>
+                        </select>
+                    </div>
+                    <div class="space-y-1">
+                        <label class="text-sm font-bold text-gray-700">Consultation Type *</label>
+                        <select name="consultationType" required class="w-full p-3 border border-gray-300 rounded-lg form-input-focus transition bg-white">
+                            <option value="">Select type</option>
+                            <option>General Check-up</option>
+                            <option>Specialist Consultation</option>
+                            <option>Follow-up</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="space-y-1">
+                        <label class="text-sm font-bold text-gray-700">Urgency Level *</label>
+                        <select name="urgency" required class="w-full p-3 border border-gray-300 rounded-lg form-input-focus transition bg-white">
+                            <option value="">Select urgency</option>
+                            <option>Low</option>
+                            <option>Medium</option>
+                            <option>High</option>
+                        </select>
+                    </div>
+                    <div class="space-y-1">
+                        <label class="text-sm font-bold text-gray-700">Preferred Date *</label>
+                        <input type="date" name="date" required class="w-full p-3 border border-gray-300 rounded-lg form-input-focus transition">
+                    </div>
+                    <div class="space-y-1">
+                        <label class="text-sm font-bold text-gray-700">Preferred Time *</label>
+                        <input type="time" name="time" required class="w-full p-3 border border-gray-300 rounded-lg form-input-focus transition">
+                    </div>
+                </div>
+
+                <div class="space-y-1">
+                    <label class="text-sm font-bold text-gray-700">Symptoms & Concerns *</label>
+                    <textarea name="symptoms" maxlength="500" required class="w-full p-3 border border-gray-300 rounded-lg form-input-focus transition h-32" placeholder="Describe how you are feeling..."></textarea>
+                </div>
+
+                <div class="flex flex-col sm:flex-row gap-4 pt-4">
+                    <button type="submit" class="flex-1 bg-arogya-blue hover:bg-blue-800 text-white font-bold py-4 px-6 rounded-xl shadow-lg transition duration-200 transform hover:-translate-y-1">Book Consultation</button>
+                    <button type="button" onclick="callHelp()" class="flex-1 bg-white border-2 border-arogya-blue text-arogya-blue hover:bg-blue-50 font-bold py-4 px-6 rounded-xl transition duration-200">Call for Immediate Help</button>
+                </div>
+            </form>
+
+            <div class="bg-red-50 p-6 border-t border-red-100 text-center">
+                <p class="text-sm text-red-800">
+                    <span class="font-bold">Note:</span> For emergency medical situations, please call <span class="font-bold underline">102</span> immediately or visit the nearest hospital.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Navbar Dropdown Logic
+        const servicesBtn = document.getElementById('servicesBtn');
+        const servicesDropdown = document.getElementById('servicesDropdown');
+        const dropdownArrow = document.getElementById('dropdownArrow');
+
+        servicesBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            servicesDropdown.classList.toggle('hidden');
+            dropdownArrow.classList.toggle('rotate-180');
+        });
+
+        // Close dropdown when clicking outside
+        window.addEventListener('click', () => {
+            if (!servicesDropdown.classList.contains('hidden')) {
+                servicesDropdown.classList.add('hidden');
+                dropdownArrow.classList.remove('rotate-180');
+            }
+        });
+
+        function handleEmergency() {
+            if (confirm('Calling emergency services (102). Click OK to call.')) {
+                window.location.href = 'tel:102';
+            }
+        }
+
+        document.getElementById("consultationForm").addEventListener("submit", function(e){
+            e.preventDefault();
+            alert("Your consultation request has been submitted! A doctor will contact you soon.");
+            this.reset();
+        });
+
+        function callHelp(){
+            window.location.href = "tel:102";
+        }
+
+        // Doctor Bot Widget Logic
+        (function () {
+            try {
+                const vapiWidget = document.createElement('vapi-widget');
+                vapiWidget.setAttribute('assistant-id', 'ae3149bf-85fd-4e58-898c-6ba1cd44241b');
+                vapiWidget.setAttribute('public-key', '3f316145-e21e-4681-9bf0-7479538e1e33');
+                vapiWidget.setAttribute('cta-title', '👨‍⚕️ DoctorBot');
+                vapiWidget.setAttribute('size', 'compact');
+                vapiWidget.setAttribute('mode', 'chat');
+                vapiWidget.setAttribute('voice-show-transcript', 'true');
+                vapiWidget.setAttribute('title', 'DoctorBot - Your Healthcare Assistant');
+                document.body.appendChild(vapiWidget);
+
+                const script = document.createElement('script');
+                script.src = 'https://static.readdy.ai/assistant/widget.umd.js';
+                script.async = true;
+                document.body.appendChild(script);
+
+                script.addEventListener('error', () => {
+                    document.getElementById('chatbot-container').style.display = 'block';
+                });
+            } catch (e) {
+                document.getElementById('chatbot-container').style.display = 'block';
+            }
+        })();
+    </script>
+
+    <div id="chatbot-container" role="dialog" aria-hidden="true">
+        <iframe id="chatbot-iframe" src="https://readdy.ai/api/public/assistant/widget?projectId=fed07d8a-bd81-4046-8278-eced5eb7ed11" title="Chatbot" loading="lazy" allow="clipboard-read; clipboard-write; microphone; camera; autoplay"></iframe>
+    </div>
+</body>
+</html>

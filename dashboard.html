@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Digital Health Records</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: Arial, sans-serif;
+    }
+
+    body {
+      background: #f8f9fc;
+      color: #333;
+    }
+
+    .container {
+      display: flex;
+      min-height: 100vh;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      width: 250px;
+      background: #fff;
+      border-right: 1px solid #e0e0e0;
+      padding: 20px;
+    }
+
+    .sidebar h3 {
+      margin-bottom: 20px;
+      font-size: 18px;
+      font-weight: bold;
+    }
+
+    .menu a {
+      display: block;
+      padding: 12px 15px;
+      margin: 5px 0;
+      border-radius: 8px;
+      text-decoration: none;
+      color: #333;
+      font-size: 15px;
+    }
+
+    .menu a.active,
+    .menu a:hover {
+      background: #e9f1ff;
+      color: #1d4ed8;
+      font-weight: bold;
+    }
+
+    .offline {
+      margin-top: 30px;
+      font-size: 14px;
+      color: green;
+    }
+
+    /* Main Content */
+    .main {
+      flex: 1;
+      padding: 30px;
+    }
+
+    .main h1 {
+      font-size: 28px;
+      margin-bottom: 10px;
+    }
+
+    .main p {
+      margin-bottom: 30px;
+      color: #666;
+    }
+
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+
+    .card {
+      background: #fff;
+      padding: 20px;
+      border-radius: 12px;
+      text-align: center;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+    }
+
+    .card h2 {
+      font-size: 24px;
+      margin: 10px 0;
+    }
+
+    .card small {
+      display: block;
+      font-size: 14px;
+      margin-top: 5px;
+      color: #28a745;
+      font-weight: bold;
+      background: #e6f9ed;
+      padding: 3px 8px;
+      border-radius: 12px;
+      display: inline-block;
+    }
+
+    .recent {
+      background: #fff;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+    }
+
+    .recent h3 {
+      margin-bottom: 10px;
+      font-size: 18px;
+    }
+
+    .recent a {
+      float: right;
+      text-decoration: none;
+      color: #1d4ed8;
+      font-weight: bold;
+    }
+
+    /* Chatbot Widget Styling */
+    vapi-widget {
+        --vapi-primary-color: #1e40af;   /* Aarogya blue */
+        --vapi-secondary-color: #eff6ff; /* Light blue bubble background */
+        --vapi-bg-color: #f9fafb;        /* Chat background */
+        --vapi-text-color: #1e293b;      /* Text color */
+        --vapi-bot-bubble: #eff6ff;      /* Bot message bubble */
+        --vapi-user-bubble: #1e40af;     /* User message bubble */
+        --vapi-user-text: #fff;          /* User text color */
+        --vapi-header-bg: #1e40af;       /* Header bar color */
+        --vapi-header-text: #fff;        /* Header text color */
+        --vapi-font: 'Inter', sans-serif;
+        border-radius: 16px !important;
+        box-shadow: 0 8px 26px rgba(0,0,0,0.25);
+    }
+
+    /* Robot doctor avatar for the bot */
+    vapi-widget::part(bot-avatar) {
+        background-image: url('https://cdn-icons-png.flaticon.com/512/3774/3774299.png');
+        background-size: cover;
+        border-radius: 50%;
+    }
+
+    /* Fallback iframe container */
+    #chatbot-container {
+        position: fixed; bottom: 90px; right: 20px;
+        width: 360px; height: 560px; border-radius: 16px;
+        overflow: hidden; box-shadow: 0 8px 26px rgba(0,0,0,0.25);
+        z-index: 9999; display: none; background: #fff;
+        border: 2px solid #1e40af;
+    }
+    #chatbot-iframe { width: 100%; height: 100%; border: none; }
+    #chat-fallback {
+        padding: 8px; font-size: 13px; text-align: center;
+        border-top: 1px solid #eee; background: #fafafa;
+    }
+  </style>
+</head>
+<body>
+  <!-- Navigation Bar -->
+  <nav class="sticky top-0 bg-white shadow-md z-40">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between items-center h-16">
+        <!-- Logo -->
+        <div class="flex-shrink-0">
+          <a href="index.html" class="text-2xl font-bold text-arogya-blue">
+            <i class="fas fa-heartbeat text-arogya-blue"></i> AarogyaLink
+          </a>
+        </div>
+
+        <!-- Desktop Navigation Links -->
+        <div class="hidden md:block">
+          <div class="ml-10 flex items-baseline space-x-4">
+            <a href="services.html" class="nav-link">Services</a>
+            <a href="medicine-management.html" class="nav-link">MediGear</a>
+            <a href="healthed.html" class="nav-link">HealthEd</a>
+            <a href="telemedicine-map.html" class="nav-link">Nearest Care Map</a>
+            <a href="aisymptomhealth.html" class="nav-link">AI Symptom Checker</a>
+            <a href="appointment.html" class="nav-link">Appointments</a>
+            <a href="videoconsultation.html" class="nav-link">Video Consultations</a>
+            <a href="familytree.html" class="nav-link">Familytree</a>
+            <a href="contact.html" class="nav-link">Contact Us</a>
+          </div>
+        </div>
+
+        <!-- Emergency Button & Mobile menu button -->
+        <div class="flex items-center space-x-4">
+          <button class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-medium transition duration-150 flex items-center space-x-2">
+            <i class="fas fa-phone-alt"></i>
+            <span class="hidden sm:inline">Emergency</span>
+          </button>
+
+          <!-- Mobile menu button -->
+          <div class="md:hidden">
+            <button id="mobile-menu-button" class="bg-gray-200 hover:bg-gray-300 text-gray-800 px-3 py-2 rounded-md">
+              <i class="fas fa-bars"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Mobile Navigation Menu -->
+      <div id="mobile-menu" class="hidden md:hidden bg-white border-t border-gray-200">
+        <div class="px-2 pt-2 pb-3 space-y-1">
+          <a href="services.html" class="nav-link block">Services</a>
+          <a href="medicine-management.html" class="nav-link block">MediGear</a>
+          <a href="healthed.html" class="nav-link block">HealthEd</a>
+          <a href="telemedicine-map.html" class="nav-link block">Nearest Care Map</a>
+          <a href="aisymptomhealth.html" class="nav-link block">AI Symptom Checker</a>
+          <a href="appointment.html" class="nav-link block">Appointments</a>
+          <a href="videoconsultation.html" class="nav-link block">Video Consultations</a>
+          <a href="familytree.html" class="nav-link block">Familytree</a>
+          <a href="contact.html" class="nav-link block">Contact Us</a>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <script>
+    // Mobile menu toggle
+    document.getElementById('mobile-menu-button').addEventListener('click', function() {
+      const menu = document.getElementById('mobile-menu');
+      menu.classList.toggle('hidden');
+    });
+
+    // Simple reusable Tailwind style for navigation links
+    document.querySelectorAll('.nav-link').forEach(link => {
+      link.className = 'nav-link text-gray-600 hover:text-arogya-light-blue px-3 py-2 rounded-md text-base font-medium transition duration-150';
+    });
+
+    // Add active state styling
+    document.querySelectorAll('.nav-link').forEach(link => {
+      if (link.classList.contains('active')) {
+        link.className += ' text-arogya-blue bg-arogya-light-blue bg-opacity-10';
+      }
+    });
+  </script>
+
+  <div class="container">
+    <!-- Sidebar -->
+    <div class="sidebar">
+      <h3>Health Dashboard</h3>
+      <div class="menu">
+        <a href="#" class="active">Overview</a>
+        <a href="#">Medical Records</a>
+        <a href="#">Prescriptions</a>
+        <a href="#">Lab Reports</a>
+      </div>
+      <div class="offline">
+        ✅ Offline Available <br />
+        <small>Your records are synced and available even without internet connection.</small>
+      </div>
+    </div>
+
+    <!-- Desktop Navigation Links -->
+    <div class="hidden sm:flex sm:items-center sm:ml-6 space-x-4">
+      <a href="home.html" class="nav-link">Home</a>
+      <a href="services.html" class="nav-link">Services</a>
+      <a href="medicine-management.html" class="nav-link">MediGear</a>
+      <a href="healthed.html" class="nav-link">HealthEd</a>
+      <a href="telemedicine-map.html" class="nav-link">Nearest Care Map</a>
+      <a href="aisymptomhealth.html" class="nav-link">AI Symptom Checker</a>
+      <a href="appointment.html" class="nav-link">Appointments</a>
+      <a href="videoconsultation.html" class="nav-link">Video Consultations</a>
+      <a href="contact.html" class="nav-link">Contact Us</a>
+    </div>
+                    
+
+    <!-- Main Content -->
+    <div class="main">
+      <h1>Digital Health Records</h1>
+      <p>Access your complete medical history offline, even without internet connectivity. Secure, encrypted, and always available.</p>
+
+      <!-- Health Metrics -->
+      <div class="metrics">
+        <div class="card">
+          <h4>Blood Pressure</h4>
+          <h2>120/80</h2>
+          <p>mmHg</p>
+          <small>normal</small>
+        </div>
+        <div class="card">
+          <h4>Blood Sugar</h4>
+          <h2>95</h2>
+          <p>mg/dL</p>
+          <small>normal</small>
+        </div>
+        <div class="card">
+          <h4>Weight</h4>
+          <h2>68</h2>
+          <p>kg</p>
+          <small>normal</small>
+        </div>
+        <div class="card">
+          <h4>Temperature</h4>
+          <h2>98.6</h2>
+          <p>°F</p>
+          <small>normal</small>
+        </div>
+      </div>
+
+      <!-- Recent Activity -->
+      <div class="recent">
+        <h3>Recent Medical Activity <a href="#">View All →</a></h3>
+        <p>No recent activity recorded.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Doctor Bot Widget -->
+  <script>
+    (function () {
+      try {
+        const vapiWidget = document.createElement('vapi-widget');
+        vapiWidget.setAttribute('assistant-id', 'ae3149bf-85fd-4e58-898c-6ba1cd44241b');
+        vapiWidget.setAttribute('public-key', '3f316145-e21e-4681-9bf0-7479538e1e33');
+        vapiWidget.setAttribute('cta-title', '👨‍⚕️ DoctorBot');
+        vapiWidget.setAttribute('size', 'compact');
+        vapiWidget.setAttribute('mode', 'chat');
+        vapiWidget.setAttribute('voice-show-transcript', 'true');
+        vapiWidget.setAttribute('title', 'DoctorBot - Your Healthcare Assistant');
+        document.body.appendChild(vapiWidget);
+
+        const script = document.createElement('script');
+        script.src = 'https://static.readdy.ai/assistant/widget.umd.js';
+        script.async = true;
+        document.body.appendChild(script);
+
+        script.addEventListener('error', () => {
+          console.warn('Widget script failed to load — showing iframe fallback.');
+          document.getElementById('chatbot-container').style.display = 'block';
+        });
+      } catch (e) {
+        console.error('Error initializing provider widget:', e);
+        document.getElementById('chatbot-container').style.display = 'block';
+      }
+    })();
+  </script>
+
+  <!-- Fallback Iframe -->
+  <div id="chatbot-container" role="dialog" aria-hidden="true">
+    <iframe id="chatbot-iframe"
+      src="https://readdy.ai/api/public/assistant/widget?projectId=fed07d8a-bd81-4046-8278-eced5eb7ed11"
+      title="Chatbot" loading="lazy"
+      allow="clipboard-read; clipboard-write; microphone; camera; autoplay"></iframe>
+    <div id="chat-fallback">
+      Chat failed to load — <a id="open-chat-newtab"
+        href="https://readdy.ai/api/public/assistant/widget?projectId=fed07d8a-bd81-4046-8278-eced5eb7ed11"
+        target="_blank" rel="noopener">open DoctorBot in a new tab</a>.
+    </div>
+  </div>
+</body>
+</html>
