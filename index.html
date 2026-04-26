@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AarogyaLink - Digital Healthcare at Your Fingertips</title>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Configure Tailwind for custom theme and Font -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'arogya-blue': '#1e40af', // A deep, strong blue
+                        'arogya-light-blue': '#3b82f6', // A bright, primary blue
+                        'arogya-bg-light': '#f9fafb', // Very light background
+                        'arogya-extra-light': '#eff6ff', // A very light blue for section backgrounds
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Apply the Inter font globally */
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        /* Custom styling for the blurred background effect on the hero section */
+        .hero-background {
+            /* Using a medical-themed placeholder image */
+            background-image: url(docs.jpg);
+            background-size: cover;
+            background-position: center;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1; /* Place behind content */
+        }
+
+        /* Semi-transparent white overlay for the frosted glass effect and text readability */
+        .hero-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0.45); /* 85% opacity white */
+            /* Applying blur effect to the overlay background */
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px); /* For better cross-browser compatibility */
+            z-index: 0;
+        }
+        
+        /* Utility to make the text in the hero section pop */
+        .hero-content {
+            position: relative;
+            z-index: 10;
+        }
+
+        /* Custom styles for the user dashboard modal/message box */
+        #user-dashboard-message {
+            transition: all 0.3s ease-in-out;
+        }
+
+        /* Smooth scrolling for anchor links */
+        html {
+            scroll-behavior: smooth;
+        }
+
+        /* Chatbot Widget Styling */
+        vapi-widget {
+            --vapi-primary-color: #1e40af;   /* Aarogya blue */
+            --vapi-secondary-color: #eff6ff; /* Light blue bubble background */
+            --vapi-bg-color: #f9fafb;        /* Chat background */
+            --vapi-text-color: #1e293b;      /* Text color */
+            --vapi-bot-bubble: #eff6ff;      /* Bot message bubble */
+            --vapi-user-bubble: #1e40af;     /* User message bubble */
+            --vapi-user-text: #fff;          /* User text color */
+            --vapi-header-bg: #1e40af;       /* Header bar color */
+            --vapi-header-text: #fff;        /* Header text color */
+            --vapi-font: 'Inter', sans-serif;
+            border-radius: 16px !important;
+            box-shadow: 0 8px 26px rgba(0,0,0,0.25);
+        }
+
+        /* Robot doctor avatar for the bot */
+        vapi-widget::part(bot-avatar) {
+            background-image: url('https://cdn-icons-png.flaticon.com/512/3774/3774299.png');
+            background-size: cover;
+            border-radius: 50%;
+        }
+
+        /* Fallback iframe container */
+        #chatbot-container {
+            position: fixed; bottom: 90px; right: 20px;
+            width: 360px; height: 560px; border-radius: 16px;
+            overflow: hidden; box-shadow: 0 8px 26px rgba(0,0,0,0.25);
+            z-index: 9999; display: none; background: #fff;
+            border: 2px solid #1e40af;
+        }
+        #chatbot-iframe { width: 100%; height: 100%; border: none; }
+        #chat-fallback {
+            padding: 8px; font-size: 13px; text-align: center;
+            border-top: 1px solid #eee; background: #fafafa;
+        }
+    </style>
+</head>
+<body class="bg-arogya-bg-light min-h-screen">
+
+    <!-- Message Box (Alert/Dashboard Mock) -->
+    <div id="user-dashboard-message" class="fixed top-20 right-4 p-4 rounded-lg shadow-lg bg-white border-t-4 border-arogya-light-blue transform translate-x-full opacity-0 z-50 transition-all duration-300 ease-in-out max-w-sm w-full">
+        <h3 class="font-bold text-lg text-arogya-blue">User Authentication</h3>
+        <p class="text-sm text-gray-700 mt-1">If logged in: Welcome to your Dashboard! If not: Please log in or sign up to access personalized services.</p>
+        <button onclick="closeMessage()" class="mt-3 text-sm text-arogya-light-blue hover:text-arogya-blue font-semibold">Close</button>
+    </div>
+
+    <!-- Navigation Bar -->
+    <nav class="sticky top-0 bg-white shadow-md z-40">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between h-16">
+            
+            <div class="flex items-center">
+                <a href="index.html" class="flex items-center text-2xl font-extrabold text-arogya-blue hover:text-arogya-light-blue transition duration-150">
+                    <svg class="h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0zM12 4v2m-3 7h6m-3-3v6" />
+                    </svg>
+                    AarogyaLink
+                </a>
+            </div>
+
+            <div class="hidden md:flex items-center space-x-1">
+                <a href="index.html" class="text-arogya-blue bg-arogya-extra-light px-3 py-2 rounded-md text-sm font-bold" style="text-decoration: none !important;">Home</a>
+                <a href="#why-choose" class="text-gray-600 hover:text-arogya-light-blue px-3 py-2 rounded-md text-sm font-semibold transition duration-150">About</a>
+                
+                <div class="relative group h-full flex items-center">
+                    <button class="text-gray-600 group-hover:text-arogya-light-blue px-3 py-2 rounded-md text-sm font-semibold transition duration-150 flex items-center">
+                        Services
+                        <svg class="w-4 h-4 ml-1 transition-transform group-hover:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                        </svg>
+                    </button>
+
+                    <div class="absolute top-full left-0 w-56 bg-white border border-gray-100 rounded-xl shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 ease-in-out transform group-hover:translate-y-0 -translate-y-2 z-50">
+                        <div class="py-2 px-1">
+                            <a href="services.html" class="block px-4 py-2.5 text-sm text-gray-700 hover:bg-arogya-extra-light hover:text-arogya-blue rounded-lg transition duration-150">
+                                🏥 All Services
+                            </a>
+                            <div class="border-t border-gray-100 my-1 mx-2"></div>
+                            <a href="aisymptomhealth.html" class="block px-4 py-2.5 text-sm text-gray-700 hover:bg-arogya-extra-light hover:text-arogya-blue rounded-lg transition duration-150">
+                                🤖 AI Symptom Checker
+                            </a>
+                            <a href="telemedicine-map.html" class="block px-4 py-2.5 text-sm text-gray-700 hover:bg-arogya-extra-light hover:text-arogya-blue rounded-lg transition duration-150">
+                                📍 Nearest Care Map
+                            </a>
+                            <a href="videoconsultation.html" class="block px-4 py-2.5 text-sm text-gray-700 hover:bg-arogya-extra-light hover:text-arogya-blue rounded-lg transition duration-150">
+                                🎥 Video Consultation
+                            </a>
+                            <a href="consultation.html" class="block px-4 py-2.5 text-sm text-gray-700 hover:bg-arogya-extra-light hover:text-arogya-blue rounded-lg transition duration-150">
+                                📅 Book Consultation
+                            </a>
+                            <a href="familyhealthtree.html" class="block px-4 py-2.5 text-sm text-gray-700 hover:bg-arogya-extra-light hover:text-arogya-blue rounded-lg transition duration-150">
+                                👨‍👩‍👧‍👦 Family Tree
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <a href="healthed.html" class="text-gray-600 hover:text-arogya-light-blue px-3 py-2 rounded-md text-sm font-semibold transition duration-150">HealthEd</a>
+                <a href="medicine-management.html" class="text-gray-600 hover:text-arogya-light-blue px-3 py-2 rounded-md text-sm font-semibold transition duration-150">MediGear</a>
+                <a href="contact.html" class="text-gray-600 hover:text-arogya-light-blue px-3 py-2 rounded-md text-sm font-semibold transition duration-150">Contact Us</a>
+            </div>
+
+            <div class="flex items-center space-x-4">
+                <button onclick="handleEmergency()" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-full shadow-md transition duration-150 transform hover:scale-105 text-sm">
+                    Emergency
+                </button>
+                <a href="dashboard.html" id="user-icon-btn" class="p-2 rounded-full text-arogya-blue hover:bg-arogya-blue/10 transition duration-150">
+                    <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                    </svg>
+                </a>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<style>
+    /* Clean styles for Nav Links */
+    .nav-link {
+        @apply text-gray-600 hover:text-arogya-light-blue px-3 py-2 rounded-md text-sm font-semibold transition duration-150;
+    }
+    /* Styles for Dropdown Items */
+    .dropdown-item {
+        @apply block px-4 py-3 text-sm text-gray-700 hover:bg-arogya-extra-light hover:text-arogya-blue transition duration-150;
+    }
+</style>
+
+
+    <!-- Hero Section -->
+    <header id="home" class="relative overflow-hidden h-[90vh] flex items-center justify-center">
+        <!-- Background Image/Effect Container -->
+        <div class="hero-background"></div>
+        <div class="hero-overlay"></div>
+
+        <!-- Hero Content (Centered) -->
+        <div class="hero-content w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 lg:py-0">
+            <div class="max-w-3xl text-gray-800">
+                <p class="text-sm font-semibold uppercase tracking-wider text-arogya-light-blue mb-2">
+                    Your Health, Digitally Connected
+                </p>
+                <h1 class="text-5xl md:text-6xl lg:text-7xl font-extrabold leading-tight mb-4">
+                    Healthcare at Your Fingertips
+                    <span class="text-arogya-light-blue block">Fingertips</span>
+                </h1>
+                <p class="text-lg md:text-xl text-gray-600 mb-10 max-w-xl">
+                    Experience seamless digital healthcare with AarogyaLink.
+                    Connect with top doctors, book consultations, and access quality healthcare from anywhere, anytime.
+                </p>
+
+                <!-- Action Buttons -->
+                <div class="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 mb-10">
+                    <a href="consultation.html" style="text-decoration: none; color:inherit">
+                    <button class="flex items-center justify-center bg-arogya-light-blue hover:bg-arogya-blue text-white font-bold py-3 px-8 rounded-xl shadow-lg transition duration-300 transform hover:scale-[1.02]">
+                        <!-- Book Icon (SVG) -->
+                        <svg class="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                        Book Consultation
+                    </button>
+                    </a>
+                    <a href="services.html" style="text-decoration: none; color:inherit">
+                    <button class="flex items-center justify-center border-2 border-gray-300 text-gray-700 bg-white hover:bg-arogya-light-blue/10 font-bold py-3 px-8 rounded-xl transition duration-300 transform hover:shadow-md">
+                        <!-- Explore Icon (SVG) -->
+                        <svg class="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        </svg>
+                        Explore Services
+                    </button>
+                    </a>
+                </div>
+
+                <!-- Statistics Bar (Now flows naturally below the buttons) -->
+                <div class="bg-white rounded-2xl shadow-xl p-6 md:p-8 flex justify-around border-t-4 border-arogya-light-blue">
+                    <div class="text-center">
+                        <p class="text-3xl md:text-4xl font-extrabold text-arogya-blue">500+</p>
+                        <p class="text-sm text-gray-600 mt-1">Expert Doctors</p>
+                    </div>
+                    <div class="text-center border-x border-gray-200 px-4 md:px-10">
+                        <p class="text-3xl md:text-4xl font-extrabold text-arogya-blue">50K+</p>
+                        <p class="text-sm text-gray-600 mt-1">Happy Patients</p>
+                    </div>
+                    <div class="text-center">
+                        <p class="text-3xl md:text-4xl font-extrabold text-arogya-blue">24/7</p>
+                        <p class="text-sm text-gray-600 mt-1">Availability</p>
+                    </div>
+                </div>
+
+            </div>
+            
+        </div>
+    </header>
+
+    <!-- 1. Why Choose AarogyaLink Section (Simple & Accessible) -->
+    <section id="why-choose" class="py-20 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+                <!-- Left Content: Features and CTA -->
+                <div>
+                    <span class="inline-block bg-arogya-extra-light text-arogya-light-blue text-xs font-semibold px-3 py-1 rounded-full mb-4">
+                        Why Choose AarogyaLink
+                    </span>
+                    <h2 class="text-4xl md:text-5xl font-extrabold text-gray-900 leading-tight mb-6">
+                        Healthcare Made 
+                        <span class="text-arogya-light-blue">Simple &</span>
+                        <span class="text-arogya-light-blue block">Accessible</span>
+                    </h2>
+                    <p class="text-lg text-gray-600 mb-8">
+                        We're transforming healthcare delivery by combining cutting-edge technology with compassionate medical care. Your health journey starts here.
+                    </p>
+
+                    <!-- Feature List -->
+                    <ul class="space-y-4 mb-10 text-lg text-gray-700">
+                        <li class="flex items-start">
+                            <svg class="w-6 h-6 mr-3 text-arogya-light-blue flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                            </svg>
+                            Connect with certified healthcare professionals
+                        </li>
+                        <li class="flex items-start">
+                            <svg class="w-6 h-6 mr-3 text-arogya-light-blue flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                            </svg>
+                            Secure and HIPAA-compliant platform
+                        </li>
+                        <li class="flex items-start">
+                            <svg class="w-6 h-6 mr-3 text-arogya-light-blue flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                            </svg>
+                            24/7 access to medical consultations
+                        </li>
+                        <li class="flex items-start">
+                            <svg class="w-6 h-6 mr-3 text-arogya-light-blue flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                            </svg>
+                            Digital health records management
+                        </li>
+                        <li class="flex items-start">
+                            <svg class="w-6 h-6 mr-3 text-arogya-light-blue flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                            </svg>
+                            Prescription delivery to your doorstep
+                        </li>
+                        <li class="flex items-start">
+                            <svg class="w-6 h-6 mr-3 text-arogya-light-blue flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                            </svg>
+                            Multi-language support
+                        </li>
+                    </ul>
+
+                    <button class="bg-arogya-light-blue hover:bg-arogya-blue text-white font-bold py-3 px-8 rounded-xl shadow-lg transition duration-300 transform hover:scale-[1.02]">
+                        Get Started Today
+                    </button>
+                </div>
+
+                <!-- Right Content: Statistics Cards -->
+                <div class="grid grid-cols-2 gap-6">
+                    <!-- Card 1: Patient Satisfaction -->
+                    <div class="bg-arogya-extra-light rounded-xl p-6 text-center shadow-md">
+                        <p class="text-5xl font-extrabold text-arogya-light-blue mb-2">98%</p>
+                        <p class="text-base text-gray-700">Patient Satisfaction</p>
+                    </div>
+                    <!-- Card 2: Average Wait Time -->
+                    <div class="bg-arogya-extra-light rounded-xl p-6 text-center shadow-md">
+                        <p class="text-5xl font-extrabold text-arogya-light-blue mb-2">15min</p>
+                        <p class="text-base text-gray-700">Average Wait Time</p>
+                    </div>
+                    <!-- Card 3: Consultations -->
+                    <div class="bg-arogya-extra-light rounded-xl p-6 text-center shadow-md">
+                        <p class="text-5xl font-extrabold text-arogya-light-blue mb-2">100K+</p>
+                        <p class="text-base text-gray-700">Consultations</p>
+                    </div>
+                    <!-- Card 4: Specializations -->
+                    <div class="bg-arogya-extra-light rounded-xl p-6 text-center shadow-md">
+                        <p class="text-5xl font-extrabold text-arogya-light-blue mb-2">50+</p>
+                        <p class="text-base text-gray-700">Specializations</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 2. Call-to-Action (CTA) Section -->
+    <section id="cta" class="py-24 bg-arogya-extra-light text-center">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h2 class="text-4xl md:text-5xl font-extrabold text-gray-900 leading-snug mb-4">
+                Ready to Transform Your 
+                <span class="text-arogya-light-blue">Healthcare</span>
+                <span class="text-arogya-light-blue block">Experience?</span>
+            </h2>
+            <p class="text-lg text-gray-600 mb-10 max-w-2xl mx-auto">
+                Join thousands of patients who trust AarogyaLink for their healthcare needs. Start your journey to better health today.
+            </p>
+            
+            <div class="flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-6">
+                <button class="flex items-center justify-center bg-arogya-light-blue hover:bg-arogya-blue text-white font-bold py-3 px-8 rounded-xl shadow-lg transition duration-300 transform hover:scale-[1.05]">
+                    Create Free Account &rarr;
+                </button>
+                <a href="contact.html" style="text-decoration: none; color:inherit">
+                <button class="flex items-center justify-center border-2 border-arogya-light-blue text-arogya-blue bg-white hover:bg-arogya-light-blue/10 font-bold py-3 px-8 rounded-xl transition duration-300 transform hover:shadow-md">
+                    Contact Us
+                </button>
+                </a>
+            </div>
+            <p class="text-xs text-gray-500 mt-4">
+                No credit card required &bull; HIPAA compliant &bull; 24/7 support
+            </p>
+        </div>
+    </section>
+
+    <!-- 3. Detailed Footer Section -->
+    <footer class="bg-white border-t border-gray-200 pt-12 pb-6">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-2 md:grid-cols-5 gap-10">
+                
+                <!-- Brand Info and Socials (Col 1) -->
+                <div class="col-span-2 md:col-span-2">
+                    <a href="#" class="flex items-center text-2xl font-extrabold text-arogya-blue mb-4">
+                        <svg class="h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0zM12 4v2m-3 7h6m-3-3v6" />
+                        </svg>
+                        AarogyaLink
+                    </a>
+                    <p class="text-sm text-gray-600 mb-6 max-w-sm">
+                        Connecting you to quality healthcare services anytime, anywhere. Your trusted partner in digital health.
+                    </p>
+                    
+                    <!-- Social Icons -->
+                    <div class="flex space-x-4">
+                        <a href="#" class="text-gray-400 hover:text-arogya-light-blue transition duration-150">
+                            <!-- Facebook/Social Icon (SVG) -->
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M14 2c4.42 0 8 3.58 8 8 0 3.73-2.55 6.85-6 7.74V14h3.5l.5-4H18V7c0-1.77 1.43-3.2 3.2-3.2h.8V1h-4c-3.13 0-5.7 2.57-5.7 5.7V10H9v4h3.5v7.74c-3.45-.89-6-4.01-6-7.74 0-4.42 3.58-8 8-8z"/></svg>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-arogya-light-blue transition duration-150">
+                            <!-- Twitter/Social Icon (SVG) -->
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M22.46 6c-.84.37-1.74.62-2.67.73.96-.58 1.7-1.5 2.04-2.52-.9.53-1.9.92-2.93 1.13-.85-.9-2.06-1.47-3.38-1.47-2.54 0-4.6 2.06-4.6 4.6 0 .36.04.7.13 1.03-3.82-.19-7.2-2.02-9.47-4.81-.4.69-.64 1.5-.64 2.38 0 1.59.81 3 2.04 3.82-.75-.02-1.45-.23-2.06-.57v.06c0 2.23 1.59 4.09 3.7 4.5-.38.1-.79.15-1.2.15-.29 0-.57-.03-.84-.08.59 1.84 2.3 3.17 4.34 3.2-1.58 1.24-3.57 1.99-5.73 1.99-.37 0-.74-.02-1.1-.06 2.05 1.32 4.49 2.09 7.12 2.09 8.54 0 13.2-7.08 13.2-13.2 0-.2-.01-.4-.02-.6.91-.65 1.7-1.46 2.33-2.39z"/></svg>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-arogya-light-blue transition duration-150">
+                            <!-- Instagram/Social Icon (SVG) -->
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm3.17 11.41a1.2 1.2 0 01-1.2 1.2h-3.94a1.2 1.2 0 01-1.2-1.2V9.38a1.2 1.2 0 011.2-1.2h3.94a1.2 1.2 0 011.2 1.2v4.03zM12 10.37a2.63 2.63 0 100 5.26 2.63 2.63 0 000-5.26z"/></svg>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-arogya-light-blue transition duration-150">
+                            <!-- LinkedIn/Social Icon (SVG) -->
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M19 3h-14c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM8 19H5V8h3v11zM6.5 6.75a1.25 1.25 0 110-2.5 1.25 1.25 0 010 2.5zM19 19h-3v-5c0-1.4-.6-2-1.4-2-.8 0-1.6.6-1.6 2v5h-3V8h3v1.8c.4-.7 1.2-1.8 3-1.8 2.2 0 4 1.4 4 4v7z"/></svg>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Services Links (Col 2) -->
+                <div>
+                    <h5 class="text-lg font-bold text-gray-900 mb-4">Services</h5>
+                    <ul class="space-y-3 text-sm">
+                        <li><a href="consultation.html" class="text-gray-600 hover:text-arogya-light-blue">Video Consultations</a></li>
+                        <li><a href="consultation.html" class="text-gray-600 hover:text-arogya-light-blue">Book Appointments</a></li>
+                        <li><a href="dashboard.html" class="text-gray-600 hover:text-arogya-light-blue">Health Records</a></li>
+                        <li><a href="dashboard.html" class="text-gray-600 hover:text-arogya-light-blue">E-Prescriptions</a></li>
+                    </ul>
+                </div>
+
+                <!-- Company Links (Col 3) -->
+                <div>
+                    <h5 class="text-lg font-bold text-gray-900 mb-4">Company</h5>
+                    <ul class="space-y-3 text-sm">
+                        <li><a href="index.html" class="text-gray-600 hover:text-arogya-light-blue">About Us</a></li>
+                        <li><a href="contact.html" class="text-gray-600 hover:text-arogya-light-blue">Careers</a></li>
+                        <li><a href="healthed.html" class="text-gray-600 hover:text-arogya-light-blue">Blog</a></li>
+                        <li><a href="contact.html" class="text-gray-600 hover:text-arogya-light-blue">Press</a></li>
+                    </ul>
+                </div>
+
+                <!-- Resources Links (Col 4) -->
+                <div>
+                    <h5 class="text-lg font-bold text-gray-900 mb-4">Resources</h5>
+                    <ul class="space-y-3 text-sm">
+                        <li><a href="healthed.html" class="text-gray-600 hover:text-arogya-light-blue">HealthEd</a></li>
+                        <li><a href="contact.html" class="text-gray-600 hover:text-arogya-light-blue">Help Center</a></li>
+                        <li><a href="contact.html" class="text-gray-600 hover:text-arogya-light-blue">Privacy Policy</a></li>
+                        <li><a href="contact.html" class="text-gray-600 hover:text-arogya-light-blue">Terms of Service</a></li>
+                    </ul>
+                </div>
+
+            </div>
+
+            <!-- Copyright and Legal Links -->
+            <div class="mt-12 pt-6 border-t border-gray-100 flex flex-col sm:flex-row justify-between items-center text-sm text-gray-500">
+                <p>&copy; 2025 AarogyaLink. All rights reserved.</p>
+                <div class="flex space-x-4 mt-4 sm:mt-0">
+                    <a href="contact.html" class="hover:text-arogya-light-blue">Privacy</a>
+                    <a href="contact.html" class="hover:text-arogya-light-blue">Terms</a>
+                    <a href="contact.html" class="hover:text-arogya-light-blue">Cookies</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        function handleEmergency() {
+            const userConfirmed = confirm('Calling emergency services (102). Click OK to call.');
+            if (userConfirmed) {
+                window.location.href = 'tel:102';
+            }
+        }
+
+        const userIconBtn = document.getElementById('user-icon-btn');
+        const messageBox = document.getElementById('user-dashboard-message');
+
+        /**
+         * Toggles the visibility of the user dashboard/login message box.
+         */
+        userIconBtn.addEventListener('click', () => {
+            if (messageBox.classList.contains('translate-x-full')) {
+                // Show message
+                messageBox.classList.remove('translate-x-full', 'opacity-0');
+                messageBox.classList.add('translate-x-0', 'opacity-100');
+            } else {
+                // Hide message
+                closeMessage();
+            }
+        });
+
+        /**
+         * Closes the user dashboard/login message box.
+         */
+        function closeMessage() {
+            messageBox.classList.add('translate-x-full', 'opacity-0');
+            messageBox.classList.remove('translate-x-0', 'opacity-100');
+        }
+
+        // Close message when clicking anywhere else on the window
+        window.addEventListener('click', (event) => {
+            if (!userIconBtn.contains(event.target) && !messageBox.contains(event.target)) {
+                closeMessage();
+            }
+        });
+    </script>
+
+    <!-- Doctor Bot Widget -->
+    <script>
+        (function () {
+            try {
+                const vapiWidget = document.createElement('vapi-widget');
+                vapiWidget.setAttribute('assistant-id', 'ae3149bf-85fd-4e58-898c-6ba1cd44241b');
+                vapiWidget.setAttribute('public-key', '3f316145-e21e-4681-9bf0-7479538e1e33');
+                vapiWidget.setAttribute('cta-title', '👨‍⚕️ DoctorBot');
+                vapiWidget.setAttribute('size', 'compact');
+                vapiWidget.setAttribute('mode', 'chat');
+                vapiWidget.setAttribute('voice-show-transcript', 'true');
+                vapiWidget.setAttribute('title', 'DoctorBot - Your Healthcare Assistant');
+                document.body.appendChild(vapiWidget);
+
+                const script = document.createElement('script');
+                script.src = 'https://static.readdy.ai/assistant/widget.umd.js';
+                script.async = true;
+                document.body.appendChild(script);
+
+                script.addEventListener('error', () => {
+                    console.warn('Widget script failed to load — showing iframe fallback.');
+                    document.getElementById('chatbot-container').style.display = 'block';
+                });
+            } catch (e) {
+                console.error('Error initializing provider widget:', e);
+                document.getElementById('chatbot-container').style.display = 'block';
+            }
+        })();
+    </script>
+
+    <!-- Fallback Iframe -->
+    <div id="chatbot-container" role="dialog" aria-hidden="true">
+        <iframe id="chatbot-iframe"
+            src="https://readdy.ai/api/public/assistant/widget?projectId=fed07d8a-bd81-4046-8278-eced5eb7ed11"
+            title="Chatbot" loading="lazy"
+            allow="clipboard-read; clipboard-write; microphone; camera; autoplay"></iframe>
+        <div id="chat-fallback">
+            Chat failed to load — <a id="open-chat-newtab"
+                href="https://readdy.ai/api/public/assistant/widget?projectId=fed07d8a-bd81-4046-8278-eced5eb7ed11"
+                target="_blank" rel="noopener">open DoctorBot in a new tab</a>.
+        </div>
+    </div>
+</body>
+</html>

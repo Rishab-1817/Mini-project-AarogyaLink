@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AarogyaLink</title>
+  <link rel="stylesheet" href="style.css"> <!-- Your CSS file -->
+  <script src="https://kit.fontawesome.com/a2e0c3c6f0.js" crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+  <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Configure Tailwind for custom theme and Font -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'arogya-blue': '#1e40af', // A deep, strong blue
+                        'arogya-light-blue': '#3b82f6', // A bright, primary blue
+                        'arogya-bg-light': '#f9fafb', // Very light background
+                        'arogya-extra-light': '#eff6ff', // A very light blue for section backgrounds
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Chatbot Widget Styling */
+        vapi-widget {
+            --vapi-primary-color: #1e40af;   /* Aarogya blue */
+            --vapi-secondary-color: #eff6ff; /* Light blue bubble background */
+            --vapi-bg-color: #f9fafb;        /* Chat background */
+            --vapi-text-color: #1e293b;      /* Text color */
+            --vapi-bot-bubble: #eff6ff;      /* Bot message bubble */
+            --vapi-user-bubble: #1e40af;     /* User message bubble */
+            --vapi-user-text: #fff;          /* User text color */
+            --vapi-header-bg: #1e40af;       /* Header bar color */
+            --vapi-header-text: #fff;        /* Header text color */
+            --vapi-font: 'Inter', sans-serif;
+            border-radius: 16px !important;
+            box-shadow: 0 8px 26px rgba(0,0,0,0.25);
+        }
+
+        /* Robot doctor avatar for the bot */
+        vapi-widget::part(bot-avatar) {
+            background-image: url('https://cdn-icons-png.flaticon.com/512/3774/3774299.png');
+            background-size: cover;
+            border-radius: 50%;
+        }
+
+        /* Fallback iframe container */
+        #chatbot-container {
+            position: fixed; bottom: 90px; right: 20px;
+            width: 360px; height: 560px; border-radius: 16px;
+            overflow: hidden; box-shadow: 0 8px 26px rgba(0,0,0,0.25);
+            z-index: 9999; display: none; background: #fff;
+            border: 2px solid #1e40af;
+        }
+        #chatbot-iframe { width: 100%; height: 100%; border: none; }
+        #chat-fallback {
+            padding: 8px; font-size: 13px; text-align: center;
+            border-top: 1px solid #eee; background: #fafafa;
+        }
+    </style>
+</head>
+<body>
+
+  <!-- Navigation Bar -->
+    <nav class="sticky top-0 bg-white shadow-md z-40">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <!-- Logo and Name -->
+                <div class="flex items-center">
+                    <a href="index.html" class="flex items-center text-2xl font-extrabold text-arogya-blue hover:text-arogya-light-blue transition duration-150">
+                        <!-- Heartbeat/Health Icon (SVG) -->
+                        <svg class="h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0zM12 4v2m-3 7h6m-3-3v6" />
+                        </svg>
+                        AarogyaLink
+                    </a>
+                </div>
+
+                <!-- Desktop Navigation Links -->
+                <div class="hidden sm:flex sm:items-center sm:ml-6 space-x-4">
+                    <!-- <a href="#home" class="nav-link">Home</a> -->
+                    <!-- <a href="#why-choose" class="nav-link">About</a> -->
+                    <a href="services.html" class="nav-link">Services</a>
+                    <a href="medicine-management.html" class="nav-link">MediGear</a>
+                    <a href="healthed.html" class="nav-link active">HealthEd</a>
+                    <a href="telemedicine-map.html" class="nav-link">Nearest Care Map</a>
+                    <a href="aisymptomhealth.html" class="nav-link">AI Symptom Checker</a>
+                    <a href="appointment.html" class="nav-link">Appointments</a>
+                    <a href="videoconsultation.html" class="nav-link">Video Consultations</a>
+                    <a href="familytree.html" class="nav-link">Familytree</a>
+                    <a href="contact.html" class="nav-link">Contact Us</a>
+                </div>
+
+                <!-- Mobile menu button -->
+                <div class="sm:hidden">
+                    <button id="mobile-menu-button" class="p-2 rounded-md text-gray-600 hover:text-arogya-light-blue hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-arogya-blue">
+                        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                        </svg>
+                    </button>
+                </div>
+
+                <!-- Emergency Button and User Icon -->
+                <div class="flex items-center space-x-4">
+                    <button onclick="handleEmergency()" class="bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded-full shadow-lg transition duration-150 transform hover:scale-105">
+                        Emergency
+                    </button>
+                    <!-- User Icon (Dashboard/Login) -->
+                     <a href="dashboard.html" style="text-decoration: none; color: inherit;">
+                    <button id="user-icon-btn" class="p-2 rounded-full text-arogya-blue hover:bg-arogya-blue/10 transition duration-150 focus:outline-none">
+                        <!-- User Icon (SVG) -->
+
+                        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                        </svg>
+                    </a>
+                        </button>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Mobile Navigation Menu -->
+    <div id="mobile-menu" class="sm:hidden hidden bg-white shadow-lg border-t">
+        <div class="px-2 pt-2 pb-3 space-y-1">
+            <a href="services.html" class="block px-3 py-2 text-base font-medium text-gray-600 hover:text-arogya-light-blue hover:bg-gray-50 rounded-md">Services</a>
+            <a href="medicine-management.html" class="block px-3 py-2 text-base font-medium text-gray-600 hover:text-arogya-light-blue hover:bg-gray-50 rounded-md">MediGear</a>
+            <a href="healthed.html" class="block px-3 py-2 text-base font-medium text-arogya-blue bg-arogya-blue/10 rounded-md">HealthEd</a>
+            <a href="telemedicine-map.html" class="block px-3 py-2 text-base font-medium text-gray-600 hover:text-arogya-light-blue hover:bg-gray-50 rounded-md">Nearest Care Map</a>
+            <a href="aisymptomhealth.html" class="block px-3 py-2 text-base font-medium text-gray-600 hover:text-arogya-light-blue hover:bg-gray-50 rounded-md">AI Symptom Checker</a>
+            <a href="appointment.html" class="block px-3 py-2 text-base font-medium text-gray-600 hover:text-arogya-light-blue hover:bg-gray-50 rounded-md">Appointments</a>
+            <a href="videoconsultation.html" class="block px-3 py-2 text-base font-medium text-gray-600 hover:text-arogya-light-blue hover:bg-gray-50 rounded-md">Video Consultations</a>
+            <a href="familytree.html" class="block px-3 py-2 text-base font-medium text-gray-600 hover:text-arogya-light-blue hover:bg-gray-50 rounded-md">Familytree</a>
+            <a href="contact.html" class="block px-3 py-2 text-base font-medium text-gray-600 hover:text-arogya-light-blue hover:bg-gray-50 rounded-md">Contact Us</a>
+        </div>
+    </div>
+    <script>
+        function handleEmergency() {
+            const userConfirmed = confirm('Calling emergency services (102). Click OK to call.');
+            if (userConfirmed) {
+                window.location.href = 'tel:102';
+            }
+        }
+
+        // Mobile menu toggle
+        const mobileMenuButton = document.getElementById('mobile-menu-button');
+        const mobileMenu = document.getElementById('mobile-menu');
+
+        mobileMenuButton.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+        });
+
+        // Close mobile menu when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!mobileMenuButton.contains(e.target) && !mobileMenu.contains(e.target)) {
+                mobileMenu.classList.add('hidden');
+            }
+        });
+
+        // Simple reusable Tailwind style for navigation links
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.className = 'text-gray-600 hover:text-arogya-light-blue px-3 py-2 rounded-md text-base font-medium transition duration-150';
+        });
+
+        // Add active state for current page
+        const currentPage = window.location.pathname.split('/').pop();
+        document.querySelectorAll('.nav-link').forEach(link => {
+            if (link.getAttribute('href') === currentPage) {
+                link.classList.add('active');
+                link.classList.add('text-arogya-blue', 'bg-arogya-blue/10');
+            }
+        });
+    </script>
+
+  <!-- Breadcrumb Navigation -->
+  <div class="bg-arogya-extra-light py-3">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <nav class="flex" aria-label="Breadcrumb">
+        <ol class="flex items-center space-x-2">
+          <li>
+            <a href="index.html" class="text-arogya-blue hover:text-arogya-light-blue transition duration-150">
+              <i class="fas fa-home mr-1"></i>Home
+            </a>
+          </li>
+          <li class="flex items-center">
+            <svg class="flex-shrink-0 h-4 w-4 text-gray-400 mx-2" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"/>
+            </svg>
+            <span class="text-gray-600 font-medium">Health Education</span>
+          </li>
+        </ol>
+      </nav>
+    </div>
+  </div>
+
+  <!-- Main -->
+  <main class="main container" style="padding-left: 100px;
+            padding-right: 100px">
+
+    <!-- Hero -->
+    <section class="hero fade-in">
+      <h1>Welcome to AarogyaLink HealthEd</h1>
+      <p>Making health education simple, fun, and accessible.</p>
+      <!-- <button class="btn btn-primary">Get Started</button> -->
+    </section>
+
+    <!-- Features Overview -->
+    <div class="features-grid">
+       <a href="healthvideo.html" style="text-decoration: none; color: inherit;">
+    <div class="feature-card fade-in">
+      <div class="feature-icon"><i class="fas fa-video"></i></div>
+      <div class="feature-title">Health Videos</div>
+      <p>Watch simple, reliable health education videos in your language.</p>
+    </div>
+  </a>
+      <a href="quiz.html" style="text-decoration: none; color: inherit;">
+      <div class="feature-card fade-in">
+        <div class="feature-icon"><i class="fas fa-question-circle"></i></div>
+        <div class="feature-title">Quizzes</div>
+        <p>Test your health knowledge through fun and interactive quizzes.</p>
+      </div>
+      </a>
+      <a href="gamifieded.html" style="text-decoration: none; color: inherit;">
+      <div class="feature-card fade-in">
+        <div class="feature-icon"><i class="fas fa-gamepad"></i></div>
+        <div class="feature-title">Gamified Learning</div>
+        <p>Complete lessons, earn badges, and boost your health literacy.</p>
+      </div>
+      </a>
+      <a href="firstaid.html" style="text-decoration: none; color: inherit;">
+      <div class="feature-card fade-in">
+        <div class="feature-icon"><i class="fas fa-first-aid"></i></div>
+        <div class="feature-title">First Aid Guide</div>
+        <p>Learn essential first aid techniques for emergencies.</p>
+      </div>
+      </a>
+    </div>
+
+    <!-- Quick Access Navigation
+    <section class="section">
+      <h2 class="section-title" style="font-size: 28px; font-weight:bold; padding-bottom: 20px; text-align: center;">
+        <i class="fas fa-compass"></i> Quick Access
+      </h2>
+      <div class="features-grid" style="margin-bottom: 40px;">
+        <a href="telemedicine-map.html" style="text-decoration: none; color: inherit;">
+          <div class="feature-card fade-in">
+            <div class="feature-icon" style="color: #06b6d4;"><i class="fas fa-map-marker-alt"></i></div>
+            <div class="feature-title">Find Nearby Care</div>
+            <p>Locate hospitals, pharmacies, and healthcare facilities near you.</p>
+          </div>
+        </a>
+        <a href="aids.html" style="text-decoration: none; color: inherit;">
+          <div class="feature-card fade-in">
+            <div class="feature-icon" style="color: #8b5cf6;"><i class="fas fa-shield-alt"></i></div>
+            <div class="feature-title">HIV/AIDS Awareness</div>
+            <p>Learn about HIV/AIDS prevention, treatment, and support resources.</p>
+          </div>
+        </a>
+        <a href="breastcancer.html" style="text-decoration: none; color: inherit;">
+          <div class="feature-card fade-in">
+            <div class="feature-icon" style="color: #ec4899;"><i class="fas fa-ribbon"></i></div>
+            <div class="feature-title">Breast Cancer Info</div>
+            <p>Comprehensive information about breast cancer prevention and screening.</p>
+          </div>
+        </a>
+        <a href="aisymptomhealth.html" style="text-decoration: none; color: inherit;">
+          <div class="feature-card fade-in">
+            <div class="feature-icon" style="color: #10b981;"><i class="fas fa-brain"></i></div>
+            <div class="feature-title">AI Symptom Checker</div>
+            <p>Use AI to analyze your symptoms and get health recommendations.</p>
+          </div>
+        </a>
+      </div>
+    </section> -->
+
+    <!-- Videos -->
+    <section class="section">
+      <h2 class="section-title" style="font-size: 32px; font-weight:bold; padding-bottom: 10px;"><i class="fas fa-video"></i> Health Videos</h2>
+      <div class="map-container">
+        <iframe  width="100%" height="298" style="border-radius: 1rem" src="https://www.youtube.com/embed/dhpCdqOtuj0?si=27H0MDUKJnHaSZDR" frameborder="0" allowfullscreen></iframe>
+      </div>
+    </section>
+
+  <!-- Quizzes Section -->
+  <section id="quizzes" class="section bg-light">
+    <div class="container">
+      <h2  style="font-size: 32px; font-weight:bold; padding-bottom: 10px;"><i class="fas fa-question-circle"></i> Quizzes</h2>
+      <div class="card p-4">
+        <h5>What should you do if someone faints?</h5>
+        <button class="btn btn-outline-primary mt-2">A. Give them coffee</button>
+        <button class="btn btn-outline-primary mt-2">B. Lay them flat and check breathing</button>
+        <button class="btn btn-outline-primary mt-2">C. Leave them alone</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Gamified Learning Section -->
+  <section id="gamified" class="section">
+    <div class="container">
+      <h2 style="font-size: 32px; font-weight:bold; padding-bottom: 10px;"><i class="fas fa-gamepad"></i> Gamified Health Literacy</h2>
+      <div class="card p-4 text-center">
+        <h5>🎮 Level 1: First Aid Basics</h5>
+        <p>Complete lessons & earn badges!</p>
+        <button class="btn btn-success">Start Lesson</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer Navigation -->
+  <section class="section bg-arogya-extra-light">
+    <div class="container">
+      <h2 style="font-size: 24px; font-weight:bold; padding-bottom: 20px; text-align: center;">
+        <i class="fas fa-external-link-alt"></i> Explore More
+      </h2>
+      <div class="features-grid" style="margin-bottom: 20px;">
+        <a href="index.html" style="text-decoration: none; color: inherit;">
+          <div class="feature-card fade-in">
+            <div class="feature-icon" style="color: #1e40af;"><i class="fas fa-home"></i></div>
+            <div class="feature-title">Home</div>
+            <p>Return to the main AarogyaLink homepage.</p>
+          </div>
+        </a>
+        <a href="services.html" style="text-decoration: none; color: inherit;">
+          <div class="feature-card fade-in">
+            <div class="feature-icon" style="color: #059669;"><i class="fas fa-concierge-bell"></i></div>
+            <div class="feature-title">Services</div>
+            <p>Explore all healthcare services and features.</p>
+          </div>
+        </a>
+        <a href="dashboard.html" style="text-decoration: none; color: inherit;">
+          <div class="feature-card fade-in">
+            <div class="feature-icon" style="color: #7c3aed;"><i class="fas fa-tachometer-alt"></i></div>
+            <div class="feature-title">Dashboard</div>
+            <p>Access your personal health dashboard and records.</p>
+          </div>
+        </a>
+        <a href="contact.html" style="text-decoration: none; color: inherit;">
+          <div class="feature-card fade-in">
+            <div class="feature-icon" style="color: #dc2626;"><i class="fas fa-envelope"></i></div>
+            <div class="feature-title">Contact Us</div>
+            <p>Get in touch with our healthcare team.</p>
+          </div>
+        </a>
+        <a href="consultation.html" style="text-decoration: none; color: inherit;">
+          <div class="feature-card fade-in">
+            <div class="feature-icon" style="color: #dc2626;"><i class="fas fa-video"></i></div>
+            <div class="feature-title">Consultation</div>
+            <p>Schedule and manage virtual consultations with healthcare professionals.</p>
+          </div>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="section" style="text-align:center;">
+    <p>&copy; 2025 AarogyaLink. All rights reserved.</p>
+  </footer>
+
+  <script>
+    // Dark/Light theme toggle
+    const themeToggle = document.getElementById("themeToggle");
+    themeToggle.addEventListener("click", () => {
+      document.documentElement.dataset.theme =
+        document.documentElement.dataset.theme === "dark" ? "light" : "dark";
+    });
+
+    function showEmergency() {
+      alert("🚨 Emergency feature coming soon!");
+    }
+  </script>
+
+  <!-- Doctor Bot Widget -->
+  <script>
+    (function () {
+      try {
+        const vapiWidget = document.createElement('vapi-widget');
+        vapiWidget.setAttribute('assistant-id', 'ae3149bf-85fd-4e58-898c-6ba1cd44241b');
+        vapiWidget.setAttribute('public-key', '3f316145-e21e-4681-9bf0-7479538e1e33');
+        vapiWidget.setAttribute('cta-title', '👨‍⚕️ DoctorBot');
+        vapiWidget.setAttribute('size', 'compact');
+        vapiWidget.setAttribute('mode', 'chat');
+        vapiWidget.setAttribute('voice-show-transcript', 'true');
+        vapiWidget.setAttribute('title', 'DoctorBot - Your Healthcare Assistant');
+        document.body.appendChild(vapiWidget);
+
+        const script = document.createElement('script');
+        script.src = 'https://static.readdy.ai/assistant/widget.umd.js';
+        script.async = true;
+        document.body.appendChild(script);
+
+        script.addEventListener('error', () => {
+          console.warn('Widget script failed to load — showing iframe fallback.');
+          document.getElementById('chatbot-container').style.display = 'block';
+        });
+      } catch (e) {
+        console.error('Error initializing provider widget:', e);
+        document.getElementById('chatbot-container').style.display = 'block';
+      }
+    })();
+  </script>
+
+  <!-- Fallback Iframe -->
+  <div id="chatbot-container" role="dialog" aria-hidden="true">
+    <iframe id="chatbot-iframe"
+      src="https://readdy.ai/api/public/assistant/widget?projectId=fed07d8a-bd81-4046-8278-eced5eb7ed11"
+      title="Chatbot" loading="lazy"
+      allow="clipboard-read; clipboard-write; microphone; camera; autoplay"></iframe>
+    <div id="chat-fallback">
+      Chat failed to load — <a id="open-chat-newtab"
+        href="https://readdy.ai/api/public/assistant/widget?projectId=fed07d8a-bd81-4046-8278-eced5eb7ed11"
+        target="_blank" rel="noopener">open DoctorBot in a new tab</a>.
+    </div>
+  </div>
+</body>
+</html>

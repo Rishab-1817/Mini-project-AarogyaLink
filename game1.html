@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pro First Aid Simulator - Timed Challenge</title>
+<style>
+/* --- Global & Typography --- */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #e6f7ff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 0;
+    padding: 30px 10px;
+    min-height: 100vh;
+}
+h2 {
+    color: #004d99;
+    text-align: center;
+    margin-bottom: 30px;
+    font-size: 2.2rem;
+    font-weight: 600;
+}
+/* --- Main Container & Scene --- */
+#game-container {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    max-width: 950px; /* Wider container for more tools */
+    background-color: white;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+}
+#scene {
+    position: relative;
+    width: 100%;
+    height: 450px;
+    background-image: url('ground.png'); 
+    background-size: contain;
+    background-position: center bottom;
+    border-radius: 15px;
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: flex-end; 
+    overflow: hidden; 
+}
+#patient {
+    max-width: 90%; 
+    max-height: 90%;
+    width: auto;
+    height: auto;
+    transition: filter 0.3s ease-out; 
+    margin-bottom: 5px; 
+    cursor: default;
+}
+/* Styles for the glow effect using 'filter: drop-shadow()' */
+.correct {
+    filter: drop-shadow(0 0 15px #28a745) drop-shadow(0 0 5px #28a745);
+}
+.wrong {
+    filter: drop-shadow(0 0 15px #dc3545) drop-shadow(0 0 5px #dc3545);
+}
+/* --- Timer Display --- */
+#timer-display {
+    position: absolute;
+    top: 15px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: rgba(255, 255, 255, 0.9);
+    padding: 10px 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #dc3545; 
+    z-index: 10;
+}
+.timer-critical {
+    animation: pulse 0.5s infinite alternate;
+}
+@keyframes pulse {
+    from { color: #dc3545; transform: translateX(-50%) scale(1); }
+    to { color: #ffc107; transform: translateX(-50%) scale(1.05); }
+}
+
+/* --- Tools Section --- */
+#tools-container {
+    padding: 20px;
+    background-color: #f7f7f7;
+    border-radius: 10px;
+    margin-bottom: 20px;
+}
+#tools {
+    display: flex;
+    gap: 20px; /* Reduced gap slightly for more tools */
+    flex-wrap: wrap;
+    justify-content: center;
+}
+.tool {
+    width: 65px; /* Slightly smaller tool size */
+    height: 65px;
+    cursor: grab;
+    transition: transform 0.2s, opacity 0.3s;
+    border-radius: 12px;
+    padding: 10px;
+    background-color: white; 
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15); 
+}
+.tool:hover:not(.disabled) {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 15px rgba(0,0,0,0.2);
+}
+.tool.disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+/* --- Feedback & Stats --- */
+#stats-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    padding: 0 10px;
+}
+#feedback {
+    font-size: 1.4rem;
+    height: 40px;
+    text-align: center;
+    font-weight: bold;
+    flex-grow: 1;
+}
+#score {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: #007bff;
+}
+#badge {
+    font-size: 1.6rem;
+    text-align:center;
+    color: #ff9900;
+    font-weight: bold;
+    margin-top: 10px;
+}
+/* --- Step Tracker --- */
+#step-tracker {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 0;
+    margin-bottom: 20px;
+}
+.step {
+    text-align: center;
+    width: 20%;
+    position: relative;
+    color: #aaa;
+    font-weight: 600;
+}
+.step-dot {
+    width: 15px;
+    height: 15px;
+    background-color: #ccc;
+    border-radius: 50%;
+    margin: 0 auto 5px;
+    transition: background-color 0.3s;
+}
+.step.active .step-dot {
+    background-color: #007bff;
+    box-shadow: 0 0 8px #007bff;
+}
+.step.complete .step-dot {
+    background-color: #28a745;
+    box-shadow: 0 0 8px #28a745;
+}
+/* Reset Button */
+#reset-btn {
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1rem;
+    margin-top: 20px;
+    transition: background-color 0.2s;
+}
+#reset-btn:hover {
+    background-color: #c82333;
+}
+</style>
+</head>
+<body onload="startGame()">
+
+<h2>⏱️ Stop The Bleeding!</h2>
+
+<div id="game-container">
+    
+    <div id="scene">
+        <div id="timer-display">30s</div>
+        <img id="patient" src="injured.png" alt="Injured Patient Lying Down">
+    </div>
+
+    <div id="step-tracker"></div>
+
+    <div id="stats-row">
+        <div id="score">Score: 0</div>
+        <div id="feedback">Drag the **most critical** item onto the patient to begin!</div>
+        <button id="reset-btn">Reset Scenario</button>
+    </div>
+
+    <div id="tools-container">
+        <div id="tools">
+            <img class="tool" src="bandaid.png" draggable="true" data-action="bandage" title="Apply Bandage">
+            <img class="tool" src="cough.png" draggable="true" data-action="syrup" title="Cough Syrup (Distractor)">
+            <img class="tool" src="call.png" draggable="true" data-action="phone" title="Call Emergency Services">
+            <img class="tool" src="sunglasses.png" draggable="true" data-action="sunglasses" title="Sunglasses (Distractor)">
+            <img class="tool" src="burger.png" draggable="true" data-action="burger" title="Burger (Distractor)">
+            <img class="tool" src="blanket.png" draggable="true" data-action="blanket" title="Cover with Blanket">
+            <img class="tool" src="water.png" draggable="true" data-action="water" title="Give Water">
+            <img class="tool" src="thermometer.png" draggable="true" data-action="thermometer" title="Thermometer (Distractor)">
+            
+            
+        </div>
+    </div>
+    <div id="badge"></div>
+
+</div>
+
+
+<script>
+const patient = document.getElementById('patient');
+const tools = document.querySelectorAll('.tool');
+const feedback = document.getElementById('feedback');
+const scoreEl = document.getElementById('score');
+const badgeEl = document.getElementById('badge');
+const trackerEl = document.getElementById('step-tracker');
+const resetBtn = document.getElementById('reset-btn');
+const timerDisplay = document.getElementById('timer-display');
+
+const HEALTHY_PATIENT_URL = "healthy.png"; 
+const INJURED_PATIENT_URL = "injured.png"; 
+
+// --- CRITICAL FIX: Global variable to cache the dragged item's action ---
+let draggedAction = null;
+
+// --- Timer Variables ---
+const INITIAL_TIME = 30; 
+let timeLeft = INITIAL_TIME;
+let timerInterval;
+let isGameOver = false;
+
+let score = 0;
+// Only the correct items are in this array. Distractors are not.
+const correctActions = ['bandage', 'phone', 'blanket', 'water'];
+let actionIndex = 0;
+
+// --- Timer Functions ---
+function startTimer() {
+    // Clear any existing timer just in case
+    stopTimer(); 
+    isGameOver = false;
+    timerInterval = setInterval(() => {
+        timeLeft--;
+        timerDisplay.textContent = `${timeLeft}s`;
+        
+        if (timeLeft <= 5) {
+            timerDisplay.classList.add('timer-critical');
+        }
+        
+        if (timeLeft <= 0) {
+            clearInterval(timerInterval);
+            timerDisplay.textContent = '0s';
+            endGame(false); // Game over - failed to save in time
+        }
+    }, 1000);
+}
+
+function stopTimer() {
+    clearInterval(timerInterval);
+    timerDisplay.classList.remove('timer-critical');
+}
+// --- End Timer Functions ---
+
+// --- Game Logic ---
+function initializeTracker() {
+    trackerEl.innerHTML = '';
+    correctActions.forEach((action, index) => {
+        const step = document.createElement('div');
+        step.classList.add('step');
+        step.dataset.action = action;
+        step.innerHTML = `<div class="step-dot"></div><span>${action.charAt(0).toUpperCase() + action.slice(1)}</span>`;
+        trackerEl.appendChild(step);
+    });
+    updateTracker();
+}
+
+function updateTracker() {
+    const steps = trackerEl.querySelectorAll('.step');
+    steps.forEach((step, index) => {
+        step.classList.remove('active', 'complete');
+        if (index < actionIndex) {
+            step.classList.add('complete');
+        } else if (index === actionIndex) {
+            step.classList.add('active');
+        }
+    });
+}
+
+function endGame(success) {
+    if (isGameOver) return; 
+    isGameOver = true;
+    stopTimer();
+    
+    // Disable all tools
+    tools.forEach(tool => {
+        tool.classList.add('disabled');
+        tool.draggable = false;
+    });
+
+    if (success) {
+        feedback.textContent = `🎉 YAY! You saved the patient with ${timeLeft}s left!`;
+        feedback.style.color = '#28a745';
+        patient.src = HEALTHY_PATIENT_URL;
+        showBadge();
+    } else {
+        feedback.textContent = "❌ Oops, you failed! Time ran out. Practice makes perfect!";
+        feedback.style.color = '#dc3545';
+        badgeEl.textContent = '💔 Time Expired';
+    }
+}
+
+function resetGame() {
+    stopTimer();
+    timeLeft = INITIAL_TIME;
+    timerDisplay.textContent = `${INITIAL_TIME}s`;
+    
+    score = 0;
+    actionIndex = 0;
+    draggedAction = null; // Reset dragged item cache
+    scoreEl.textContent = "Score: 0";
+    feedback.textContent = "Drag the most critical item onto the patient to begin!";
+    feedback.style.color = 'initial';
+    badgeEl.textContent = '';
+    patient.src = INJURED_PATIENT_URL;
+    isGameOver = false;
+
+    // Enable all tools
+    tools.forEach(tool => {
+        tool.classList.remove('disabled');
+        tool.draggable = true;
+    });
+    
+    initializeTracker();
+}
+
+// *** CRITICAL FIX: Start the timer immediately when the game begins ***
+function startGame() {
+    resetGame();
+    startTimer(); // Now the timer starts running immediately on page load/reset
+}
+
+resetBtn.addEventListener('click', resetGame);
+resetBtn.addEventListener('click', startTimer); 
+
+// --- CRITICAL FIX 1: Capture the action correctly during dragstart ---
+tools.forEach(tool => {
+    tool.addEventListener('dragstart', e => {
+        // Cache the data-action in the global variable
+        draggedAction = e.target.dataset.action; 
+        // We keep this line for maximum browser compatibility, though we rely on the global variable
+        e.dataTransfer.setData('text/plain', draggedAction); 
+    });
+});
+
+patient.addEventListener('dragover', e => e.preventDefault());
+patient.addEventListener('drop', e => {
+    if (isGameOver) return;
+    e.preventDefault();
+    // --- CRITICAL FIX 2: Use the cached global variable for the action ---
+    const action = draggedAction; 
+    // Clear the cache immediately after use
+    draggedAction = null;
+
+    // Only proceed if a valid action was dragged
+    if (action) {
+        checkAction(action);
+    }
+});
+// --- End Drag & Drop Fix ---
+
+function checkAction(action){
+    if (actionIndex >= correctActions.length || isGameOver) {
+        return;
+    }
+
+    // Check if the action is the CORRECT next action
+    if(action === correctActions[actionIndex]){
+        feedback.textContent = `✅ Applied ${action}! Correct action!`; 
+        feedback.style.color = "green";
+        score += 10;
+        
+        document.querySelector(`[data-action="${action}"]`).classList.add('disabled');
+        
+        actionIndex++;
+        animatePatient(true);
+        updateTracker();
+        
+        if(actionIndex === correctActions.length){
+            endGame(true); // SUCCESS!
+        }
+    } 
+    // Check if the action is a CORRECT item, but applied out of sequence
+    else if (correctActions.includes(action) && action !== correctActions[actionIndex]) {
+        feedback.textContent = `⚠️ The ${action} is useful, but it's not the correct *next* step!`; 
+        feedback.style.color = "orange";
+        score = Math.max(score - 3, 0); 
+        animatePatient(false);
+    }
+    // Check if the action is an INCORRECT item (Distractor)
+    else {
+        feedback.textContent = `❌ The ${action} is not a valid first aid item for this scenario!`; 
+        feedback.style.color = "red";
+        score = Math.max(score - 7, 0); 
+        animatePatient(false);
+    }
+    scoreEl.textContent = "Score: " + score;
+}
+
+function animatePatient(correct){
+    patient.classList.remove('correct', 'wrong'); 
+    patient.classList.add(correct ? 'correct' : 'wrong');
+    setTimeout(()=>{ patient.classList.remove('correct', 'wrong'); }, 600);
+}
+
+function showBadge(){
+    // Badge calculation logic remains the same
+    if(score >= 35) badgeEl.textContent = "🥇 Gold Health Hero!";
+    else if(score >= 25) badgeEl.textContent = "🥈 Silver Health Learner!";
+    else badgeEl.textContent = "🥉 Bronze - Keep practicing!";
+}
+
+// Ensure the game starts when the page loads
+startGame();
+</script>
+
+</body>
+</html>

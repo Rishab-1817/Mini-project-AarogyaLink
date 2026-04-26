@@ -1,0 +1,908 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Family Health Tree - AarogyaLink</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        .language-dropdown {
+            padding: 8px 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #0f172a;
+            background: white;
+            cursor: pointer;
+            outline: none;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+            box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
+        }
+
+        .language-dropdown:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+        }
+
+        .language-dropdown option {
+            padding: 10px;
+        }
+
+        .health-dropdown {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+        }
+
+        .ctitle {
+            font-size: 22px;
+            font-weight: 700;
+            color: #1e40af;
+            margin-bottom: 15px;
+        }
+
+        .fam-tree-visual {
+            position: relative;
+            width: 220px;
+            height: 90px;
+            margin: 0 auto 18px auto;
+        }
+
+        .tree-line {
+            position: absolute;
+            height: 2px;
+            background: #b0bec5;
+            border-radius: 2px;
+        }
+
+        .tree-node {
+            position: absolute;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            color: #fff;
+            font-weight: 700;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            border: 2px solid #fff;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            user-select: none;
+        }
+
+        .tree-node:hover {
+            transform: scale(1.12);
+            z-index: 10;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+        }
+
+        .sec-label {
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #999;
+            margin: 15px 0 10px 0;
+        }
+
+        .member-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+
+        .mem-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 8px;
+            padding: 10px 12px;
+            font-size: 12px;
+            line-height: 1.4;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            flex: 0 1 auto;
+        }
+
+        .mem-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .add-mem-btn {
+            background: #3b82f6;
+            color: #fff;
+            border: none;
+            border-radius: 7px;
+            padding: 8px 16px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-bottom: 10px;
+            transition: background-color 0.2s ease;
+            width: 100%;
+        }
+
+        .add-mem-btn:hover {
+            background: #1e40af;
+        }
+
+        .mem-detail-box {
+            background: #f7fafd;
+            border-radius: 9px;
+            padding: 13px;
+            font-size: 13px;
+            line-height: 1.6;
+            border: 1px solid #e3e8ee;
+            margin-top: 8px;
+            display: none;
+        }
+
+        .mem-detail-box.active {
+            display: block;
+            animation: slideDown 0.3s ease;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .mem-detail-title {
+            font-weight: 700;
+            font-size: 16px;
+            margin-bottom: 6px;
+            color: #1e40af;
+        }
+
+        .delete-btn {
+            background: #ef4444;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 5px 10px;
+            font-size: 12px;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: background 0.2s ease;
+        }
+
+        .delete-btn:hover {
+            background: #dc2626;
+        }
+
+        /* Health Condition Modal Dropdown Styles */
+        .health-modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 100;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .health-modal-overlay.active {
+            display: flex;
+        }
+
+        .health-modal {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            animation: modalSlide 0.3s ease;
+        }
+
+        @keyframes modalSlide {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .health-modal h3 {
+            font-size: 20px;
+            font-weight: 700;
+            color: #1e40af;
+            margin-bottom: 8px;
+        }
+
+        .health-modal p {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+
+        .health-dropdown-select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+            background: white;
+            color: #333;
+            margin-bottom: 20px;
+            transition: border-color 0.2s ease;
+            max-height: 300px;
+        }
+
+        .health-dropdown-select:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .health-dropdown-select option {
+            padding: 8px;
+            color: #333;
+            background: white;
+        }
+
+        .health-dropdown-select option:checked {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .health-modal-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+
+        .health-modal-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .health-modal-btn-select {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .health-modal-btn-select:hover {
+            background: #1e40af;
+        }
+
+        .health-modal-btn-cancel {
+            background: #f3f4f6;
+            color: #666;
+        }
+
+        .health-modal-btn-cancel:hover {
+            background: #e5e7eb;
+        }
+
+        .health-search-input {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+            margin-bottom: 15px;
+        }
+
+        .health-search-input:focus {
+            outline: none;
+            border-color: #3b82f6;
+        }
+
+        .health-modal-info {
+            background: #f0f9ff;
+            border-left: 4px solid #3b82f6;
+            padding: 10px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            color: #1e40af;
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+  <!-- Navigation Bar -->
+    <nav class="sticky top-0 bg-white shadow-md z-40">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <a href="index.html" class="flex items-center text-2xl font-extrabold text-arogya-blue hover:text-arogya-light-blue transition duration-150">
+                        <svg class="h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0zM12 4v2m-3 7h6m-3-3v6" />
+                        </svg>
+                        AarogyaLink
+                    </a>
+                </div>
+                <div class="hidden sm:flex sm:items-center sm:ml-6 space-x-4">
+                    <a href="index.html" class="nav-link">Back to Home</a>
+                </div>
+            </div>
+        </div>
+    </nav> 
+
+  <script>
+    // Mobile menu toggle
+    document.getElementById('mobile-menu-button').addEventListener('click', function() {
+      const menu = document.getElementById('mobile-menu');
+      menu.classList.toggle('hidden');
+    });
+
+    // Simple reusable Tailwind style for navigation links
+    document.querySelectorAll('.nav-link').forEach(link => {
+      link.className = 'nav-link text-gray-600 hover:text-arogya-light-blue px-3 py-2 rounded-md text-base font-medium transition duration-150';
+    });
+
+    // Add active state styling
+    document.querySelectorAll('.nav-link').forEach(link => {
+      if (link.classList.contains('active')) {
+        link.className += ' text-arogya-blue bg-arogya-light-blue bg-opacity-10';
+      }
+    });
+  </script>
+
+    <!-- Health Condition Selection Modal -->
+    <div class="health-modal-overlay" id="healthModal">
+        <div class="health-modal">
+            <h3 id="healthModalTitle">📋 Select Health Status</h3>
+            <p id="healthModalDesc">Choose from 50+ health conditions</p>
+            
+            <div class="health-modal-info" id="healthModalInfo">
+                💡 Tip: Type to search through conditions
+            </div>
+            
+            <input 
+                type="text" 
+                id="healthSearch" 
+                class="health-search-input" 
+                placeholder="🔍 Search conditions..."
+                onkeyup="filterHealthOptions()"
+            >
+            
+            <select id="healthSelect" class="health-dropdown-select" size="8">
+                <option value="">-- Select Health Status --</option>
+            </select>
+            
+            <div class="health-modal-buttons">
+                <button class="health-modal-btn health-modal-btn-cancel" onclick="closeHealthModal()">Cancel</button>
+                <button class="health-modal-btn health-modal-btn-select" onclick="confirmHealthSelection()">Select</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Page Header -->
+    <header class="bg-blue-50 py-12 border-b-4 border-blue-500">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h1 class="text-5xl font-extrabold text-gray-900 mb-4" id="pageTitle">
+                👨‍👩‍👧‍👦 Family Health Tree
+            </h1>
+            <p class="text-lg text-gray-600 max-w-3xl mx-auto" id="pageDesc">
+                Track and manage the health information of all your family members in one secure place.
+            </p>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        
+        <!-- Members Section -->
+        <div class="card">
+            <div class="ctitle" id="titleMembers">Family Members Directory</div>
+            
+            <div class="sec-label" id="labelMembers">family members</div>
+            <div class="member-grid" id="memGrid"></div>
+            
+            <button class="add-mem-btn" onclick="addMember()" id="btnAddMember">+ Add Family Member</button>
+            
+            <!-- Member Details -->
+            <div id="memDetail" class="mem-detail-box">
+                <div class="mem-detail-title" id="memDetailName">—</div>
+                <div id="memDetailContent"></div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <!-- <footer class="bg-white border-t border-gray-200 mt-16 py-8">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-sm text-gray-600">
+            <p>&copy; 2025 AarogyaLink. Managing Your Family's Health Together.</p>
+        </div>
+    </footer> -->
+
+    <script>
+        // Current Language
+        let currentLanguage = 'en';
+
+        // Health Conditions Database (50+ conditions in multiple languages)
+        const healthConditions = {
+            en: [
+                "Healthy",
+                "Diabetes Type 1",
+                "Diabetes Type 2",
+                "High Blood Pressure (Hypertension)",
+                "Low Blood Pressure (Hypotension)",
+                "Heart Disease",
+                "High Cholesterol",
+                "Thyroid (Hyperthyroid)",
+                "Thyroid (Hypothyroid)",
+                "Arthritis",
+                "Osteoporosis",
+                "Asthma",
+                "COPD (Chronic Obstructive Pulmonary Disease)",
+                "Bronchitis",
+                "Pneumonia",
+                "Tuberculosis",
+                "Cough & Cold",
+                "Allergy",
+                "Migraine",
+                "Headache",
+                "Epilepsy",
+                "Stroke",
+                "Parkinson's Disease",
+                "Alzheimer's Disease",
+                "Depression",
+                "Anxiety Disorder",
+                "OCD (Obsessive Compulsive Disorder)",
+                "Schizophrenia",
+                "Bipolar Disorder",
+                "Cancer (various types)",
+                "Liver Disease",
+                "Kidney Disease",
+                "Stomach Ulcer",
+                "GERD",
+                "Irritable Bowel Syndrome",
+                "Crohn's Disease",
+                "Celiac Disease",
+                "HIV/AIDS",
+                "Malaria",
+                "Dengue Fever",
+                "COVID-19",
+                "Chickenpox",
+                "Measles",
+                "Mumps",
+                "Polio",
+                "Smallpox History",
+                "Eczema",
+                "Psoriasis",
+                "Skin Infection",
+                "Obesity",
+                "Anemia",
+                "Hemophilia"
+            ],
+            hi: [
+                "स्वास्थ्य",
+                "मधुमेह प्रकार 1",
+                "मधुमेह प्रकार 2",
+                "उच्च रक्तचाप",
+                "निम्न रक्तचाप",
+                "हृदय रोग",
+                "उच्च कोलेस्ट्रॉल",
+                "थायराइड (अतिसक्रिय)",
+                "थायराइड (अल्पसक्रिय)",
+                "गठिया",
+                "ऑस्टियोपोरोसिस",
+                "दमा",
+                "सीओपीडी",
+                "ब्रोंकाइटिस",
+                "निमोनिया",
+                "तपेदिक",
+                "खांसी और जुकाम",
+                "एलर्जी",
+                "माइग्रेन",
+                "सिरदर्द",
+                "मिर्गी",
+                "स्ट्रोक",
+                "पार्किंसन रोग",
+                "अल्जाइमर रोग",
+                "अवसाद",
+                "चिंता विकार",
+                "ओसीडी",
+                "सिज़ोफ्रेनिया",
+                "बाइपोलर डिसऑर्डर",
+                "कैंसर",
+                "लीवर रोग",
+                "किडनी रोग",
+                "पेट का अल्सर",
+                "जीईआरडी",
+                "चिड़चिड़ा आंत सिंड्रोम",
+                "क्रोहन रोग",
+                "सीलिएक रोग",
+                "एचआईवी/एड्स",
+                "मलेरिया",
+                "डेंगू बुखार",
+                "कोविड-19",
+                "चेचक",
+                "खसरा",
+                "कण्ठमाला",
+                "पोलियो",
+                "चेचक का इतिहास",
+                "एक्जिमा",
+                "सोरायसिस",
+                "त्वचा संक्रमण",
+                "मोटापा",
+                "एनीमिया",
+                "हीमोफिलिया"
+            ],
+            ta: [
+                "ஆரோக்கியம்",
+                "நீரிழிவு வகை 1",
+                "நீரிழிவு வகை 2",
+                "உচ்च இரத்த அழுத்தம்",
+                "குறைந்த இரத்த அழுத்தம்",
+                "இதய நோய்",
+                "உচ்च கொலஸ்ட்ரால்",
+                "தைராய்டு (அதிசक்திமான)",
+                "தைராய்டு (குறைசக்திமான)",
+                "மூட்டு வலி",
+                "எலும்பு நொறுங்கல் நோய்",
+                "ஆஸ்துமா",
+                "நாட்பட்ட நுரையீரல் நோய்",
+                "மூச்சுக்குழாய் அழற்சி",
+                "நிமோனியா",
+                "যক्ష்மा",
+                "இருமல் மற்றும் சளி",
+                "ஒவ்வாமை",
+                "偏头痛",
+                "தலைவலி",
+                "கால்கடியம்",
+                "பக்கவாதம்",
+                "பார்கின்சன் நோய்",
+                "அல்சைமர் நோய்",
+                "மனச்சோர்வு",
+                "கவலை விकार",
+                "வாபசம்",
+                "நடு மன சிதறல்",
+                "இரட்டை விககாரம்",
+                "புற்றுநோய்",
+                "கல்லீரல் நோய்",
+                "சிறுநீரக நோய்",
+                "வயிற்று புண்",
+                "நெஞ்சுவெந்தை",
+                "எரிச்சலூட்டும் குடல் நோய் சிંக்ரோம்",
+                "ক্রোহন நோय்",
+                "செலியாக் நோய்",
+                "எச்.ஐ.வி/எய்ட்ஸ்",
+                "கொசுக்கண்ணீர்",
+                "டெங்கு காய்ச்சல்",
+                "கோவிड்-19",
+                "கோழி பொத்தல்",
+                "தட்டம்மை",
+                "முன்னிற்க் நோய்",
+                "போலியோ",
+                "கோழிப்பொத்தின் வரலாறு",
+                "பொலி மாற்றுத் தோல் நோய்",
+                "ஈரல் தொற்று",
+                "त्वचा संक्रमण",
+                "குண்டு",
+                "இரத்தक்குறைபாடு",
+                "இரத்தசஞ்சரணத் தொறு"
+            ]
+        };
+
+        // Translation Object
+        const translations = {
+            en: {
+                'pageTitle': '👨‍👩‍👧‍👦 Family Health Tree',
+                'pageDesc': 'Track and manage the health information of all your family members in one secure place.',
+                'titleMembers': 'Family Members Directory',
+                'labelMembers': 'family members',
+                'btnAddMember': '+ Add Family Member',
+                'navHome': 'Home',
+                'navServices': 'Services',
+                'navDashboard': 'Dashboard',
+                'healthStatus': 'Health Status',
+                'nonAdherence': 'Medication non-adherence %',
+                'details': 'Details',
+                'delete': '🗑️ Delete Member',
+                'enterName': "Enter member's name:",
+                'enterAge': 'Enter age:',
+                'selectHealth': 'Select health status:',
+                'enterDetails': 'Enter health details (notes, medications, etc.):',
+                'addSuccess': 'added successfully!',
+                'confirmDelete': 'Are you sure you want to delete ',
+                'deleteSuccess': 'Member deleted successfully!',
+                'noMembers': 'No family members added yet.',
+                'age': 'Age: '
+            },
+            hi: {
+                'pageTitle': '👨‍👩‍👧‍👦 पारिवारिक स्वास्थ्य वृक्ष',
+                'pageDesc': 'सभी परिवार के सदस्यों की स्वास्थ्य जानकारी को एक सुरक्षित स्थान पर ट्रैक करें और प्रबंधित करें।',
+                'titleMembers': 'पारिवारिक सदस्य निर्देशिका',
+                'labelMembers': 'पारिवारिक सदस्य',
+                'btnAddMember': '+ परिवार का सदस्य जोड़ें',
+                'navHome': 'होम',
+                'navServices': 'सेवाएं',
+                'navDashboard': 'डैशबोर्ड',
+                'healthStatus': 'स्वास्थ्य स्थिति',
+                'nonAdherence': 'दवा की अनुपालन (%)',
+                'details': 'विवरण',
+                'delete': '🗑️ सदस्य हटाएं',
+                'enterName': 'सदस्य का नाम दर्ज करें:',
+                'enterAge': 'आयु दर्ज करें:',
+                'selectHealth': 'स्वास्थ्य स्थिति चुनें:',
+                'enterDetails': 'स्वास्थ्य विवरण दर्ज करें:',
+                'addSuccess': 'सफलतापूर्वक जोड़ा गया!',
+                'confirmDelete': 'क्या आप वाकई हटाना चाहते हैं ',
+                'deleteSuccess': 'सदस्य सफलतापूर्वक हटा दिया गया!',
+                'noMembers': 'अभी तक कोई पारिवारिक सदस्य नहीं जोड़ा गया।',
+                'age': 'आयु: '
+            },
+            ta: {
+                'pageTitle': '👨‍👩‍👧‍👦 குடும்ப ஆரோக்கிய வரை',
+                'pageDesc': 'உங்கள் அனைத்து குடும்ப உறுப்பினர்களின் ஆரோக்கிய தகவலை ஒரு பாதுகாப்பான இடத்தில் ட்র்যாக் செய்யவும்.',
+                'titleMembers': 'குடும்ப உறுப்பினர் அட்டவணை',
+                'labelMembers': 'குடும்ப உறுப்பினர்கள்',
+                'btnAddMember': '+ குடும்ப உறுப்பினரைச் சேர்க்கவும்',
+                'navHome': 'முகப்பு',
+                'navServices': 'சேவைகள்',
+                'navDashboard': 'வையம்',
+                'healthStatus': 'ஆரோக்கிய நிலை',
+                'nonAdherence': 'மருத்துவ இல்லாததன்மை %',
+                'details': 'விவரங்கள்',
+                'delete': '🗑️ உறுப்பினரை அகற்று',
+                'enterName': 'உறுப்பினரின் பெயரை உள்ளிடவும்:',
+                'enterAge': 'வயதை உள்ளிடவும்:',
+                'selectHealth': 'ஆரோக்கிய நிலையைத் தேர்ந்தெடுக்கவும்:',
+                'enterDetails': 'ஆரோக்கிய விவரங்களை உள்ளிடவும்:',
+                'addSuccess': 'வெற்றிகரமாக சேர்க்கப்பட்டது!',
+                'confirmDelete': 'நிச்சயமாக நீக்க விரும்பிறீர்களா ',
+                'deleteSuccess': 'உறுப்பினர் வெற்றிகரமாக நீக்கப்பட்டார்!',
+                'noMembers': 'இதுவரை குடும்ப உறுப்பினர்கள் சேர்க்கப்படவில்லை.',
+                'age': 'வயது: '
+            }
+        };
+
+        // Family Members Data
+        let familyMembers = [
+            { name: "Dadaji", health: "High Blood Pressure", age: 78, nonAdherence: 35, details: "Regular checkups needed. Monitor blood pressure daily. Take prescribed medications on time." },
+            { name: "Dadiji", health: "Arthritis", age: 75, nonAdherence: 42, details: "Needs joint care. Physical therapy recommended. Pain management ongoing." },
+            { name: "Papa", health: "Healthy", age: 52, nonAdherence: 10, details: "No major health issues. Annual checkup recommended." },
+            { name: "Maa", health: "Thyroid (Hypothyroid)", age: 48, nonAdherence: 26, details: "On thyroid medication. TSH levels check every 6 months." },
+            { name: "RK", health: "Diabetes Type 2", age: 28, nonAdherence: 38, details: "Monitor blood sugar daily. HbA1c test every 3 months." },
+            { name: "Riya", health: "Healthy", age: 22, nonAdherence: 8, details: "No health issues. Maintain regular exercise routine." }
+        ];
+
+        // Get Translation
+        function t(key) {
+            return translations[currentLanguage][key] || key;
+        }
+
+        // Change Language
+        function changeLanguage(lang) {
+            currentLanguage = lang;
+
+            // Update language select input
+            const langSelect = document.getElementById('langSelect');
+            if (langSelect) {
+                langSelect.value = lang;
+            }
+
+            // Update UI
+            document.getElementById('pageTitle').textContent = t('pageTitle');
+            document.getElementById('pageDesc').textContent = t('pageDesc');
+            document.getElementById('titleMembers').textContent = t('titleMembers');
+            document.getElementById('labelMembers').textContent = t('labelMembers');
+            document.getElementById('btnAddMember').textContent = t('btnAddMember');
+            document.getElementById('navHome').textContent = t('navHome');
+            document.getElementById('navServices').textContent = t('navServices');
+            document.getElementById('navDashboard').textContent = t('navDashboard');
+
+            // Update health modal labels if open
+            const modalTitle = document.getElementById('healthModalTitle');
+            if (modalTitle) modalTitle.textContent = t('selectHealth');
+
+            // Save language preference
+            localStorage.setItem('preferredLanguage', lang);
+            renderMembers();
+        }
+
+        // Render family members in grid
+        function renderMembers() {
+            const grid = document.getElementById('memGrid');
+            grid.innerHTML = '';
+            if (familyMembers.length === 0) {
+                grid.innerHTML = `<p style="color: #999; text-align: center; width: 100%;">${t('noMembers')}</p>`;
+                return;
+            }
+            familyMembers.forEach((mem, idx) => {
+                const div = document.createElement('div');
+                div.className = 'mem-card';
+                div.innerHTML = `<b>${mem.name}</b><br>${t('age')}${mem.age}<br>${t('healthStatus')}: ${mem.health}<br>${t('nonAdherence')}: ${mem.nonAdherence ?? 0}%`;
+                div.onclick = () => selMem(idx);
+                grid.appendChild(div);
+            });
+        }
+
+        // Show member details
+        function selMem(idx) {
+            if (!familyMembers[idx]) return;
+            const mem = familyMembers[idx];
+            document.getElementById('memDetailName').textContent = mem.name + ' (' + t('age') + mem.age + ')';
+            document.getElementById('memDetailContent').innerHTML =
+                `<b>${t('healthStatus')}:</b> ${mem.health}<br><b>${t('nonAdherence')}:</b> ${mem.nonAdherence ?? 0}%<br><b>${t('details')}:</b> ${mem.details}<br><button class="delete-btn" onclick="deleteMember(${idx})">${t('delete')}</button>`;
+            document.getElementById('memDetail').classList.add('active');
+        }
+
+        // Global variables for member addition workflow
+        let newMemberData = { name: '', age: '', health: '', details: '', nonAdherence: 0 };
+
+        // Show health condition modal
+        function showHealthModal() {
+            const select = document.getElementById('healthSelect');
+            const healthOptions = healthConditions[currentLanguage];
+            
+            // Clear previous options
+            select.innerHTML = '<option value="">-- ' + t('selectHealth') + ' --</option>';
+            
+            // Populate dropdown
+            healthOptions.forEach(condition => {
+                const opt = document.createElement('option');
+                opt.value = condition;
+                opt.textContent = condition;
+                select.appendChild(opt);
+            });
+            
+            // Clear search
+            document.getElementById('healthSearch').value = '';
+            
+            // Update modal title based on language
+            document.getElementById('healthModalTitle').textContent = t('selectHealth');
+            document.getElementById('healthModalDesc').textContent = t('pageDesc');
+            
+            // Show modal
+            document.getElementById('healthModal').classList.add('active');
+            select.focus();
+        }
+
+        // Close health modal
+        function closeHealthModal() {
+            document.getElementById('healthModal').classList.remove('active');
+            document.getElementById('healthSearch').value = '';
+        }
+
+        // Confirm health selection
+        function confirmHealthSelection() {
+            const select = document.getElementById('healthSelect');
+            const selectedHealth = select.value;
+            
+            if (!selectedHealth) {
+                alert(t('selectHealth'));
+                return;
+            }
+            
+            newMemberData.health = selectedHealth;
+            closeHealthModal();
+            
+            // Ask for details
+            const details = prompt(t('enterDetails'));
+            if (!details) return;
+            newMemberData.details = details;
+
+            // Ask for medication non-adherence percentage
+            let nonAdherence = prompt(t('nonAdherence') + ' (0-100):', '10');
+            nonAdherence = parseInt(nonAdherence);
+            if (isNaN(nonAdherence) || nonAdherence < 0 || nonAdherence > 100) {
+                nonAdherence = Math.floor(Math.random() * 31) + 5; // default 5-35%
+            }
+            newMemberData.nonAdherence = nonAdherence;
+            
+            // Add member to array
+            familyMembers.push(newMemberData);
+            renderMembers();
+            saveFamilyData();
+            alert(`✓ ${newMemberData.name} ${t('addSuccess')}`);
+            
+            // Reset
+            newMemberData = { name: '', age: '', health: '', details: '', nonAdherence: 0 };
+        }
+
+        // Filter health options based on search
+        function filterHealthOptions() {
+            const searchTerm = document.getElementById('healthSearch').value.toLowerCase();
+            const select = document.getElementById('healthSelect');
+            const options = select.querySelectorAll('option');
+            
+            options.forEach((opt, idx) => {
+                if (idx === 0) return; // Skip placeholder
+                const text = opt.textContent.toLowerCase();
+                if (text.includes(searchTerm)) {
+                    opt.style.display = 'block';
+                } else {
+                    opt.style.display = 'none';
+                }
+            });
+        }
+
+        // Add new member
+        function addMember() {
+            const name = prompt(t('enterName'));
+            if (!name) return;
+            
+            const age = prompt(t('enterAge'));
+            if (!age) return;
+            
+            newMemberData.name = name;
+            newMemberData.age = parseInt(age) || age;
+            
+            // Show health condition modal
+            showHealthModal();
+        }
+
+        // Delete member
+        function deleteMember(idx) {
+            if (!familyMembers[idx]) return;
+            if (confirm(`${t('confirmDelete')}${familyMembers[idx].name}?`)) {
+                familyMembers.splice(idx, 1);
+                renderMembers();
+                saveFamilyData();
+                document.getElementById('memDetail').classList.remove('active');
+                alert(t('deleteSuccess'));
+            }
+        }
+
+        // Save to localStorage
+        function saveFamilyData() {
+            localStorage.setItem('familyMembers', JSON.stringify(familyMembers));
+        }
+
+        // Load from localStorage
+        function loadFamilyData() {
+            const saved = localStorage.getItem('familyMembers');
+            if (saved) {
+                familyMembers = JSON.parse(saved);
+            }
+            
+            // Load saved language preference
+            const savedLang = localStorage.getItem('preferredLanguage') || 'en';
+            if (savedLang !== 'en') {
+                changeLanguage(savedLang);
+            } else {
+                renderMembers();
+            }
+        }
+
+        // Initialize on load
+        document.addEventListener('DOMContentLoaded', loadFamilyData);
+    </script>
+
+</body>
+</html>

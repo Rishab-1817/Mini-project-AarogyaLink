@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>First Aid Quiz - AarogyaLink</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://kit.fontawesome.com/a2e0c3c6f0.js" crossorigin="anonymous"></script>
+  <style>
+    body {
+    font-family: Arial, sans-serif;
+    background: url('fa.png') repeat center center fixed;
+    background-size: cover;
+    margin: 0;
+    padding: 0;
+    }
+
+    .quiz-container {
+    max-width: 800px;
+    margin: 60px auto;
+    padding: 25px;
+    border-radius: 15px;
+    background: rgba(255, 255, 255, 0.9); /* semi-transparent white so bg shows */
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    }
+    h2 { text-align:center; margin-bottom: 20px; }
+    .banner {
+      text-align:center;
+      margin-bottom:20px;
+    }
+    .banner img {
+      max-width:120px;
+    }
+    .progress-bar {
+      width:100%;
+      background:#e6e6e6;
+      border-radius:8px;
+      overflow:hidden;
+      margin:15px 0 25px;
+    }
+    .progress {
+      height:18px;
+      width:0;
+      background:#28a745;
+      text-align:center;
+      color:white;
+      font-size:0.8rem;
+      transition: width 0.4s ease;
+    }
+    .question {
+      margin: 20px 0;
+      padding: 15px;
+      background: white;
+      border-radius: 10px;
+      border: 1px solid #ddd;
+    }
+    .question h4 { margin-bottom: 10px; }
+    .option { display:block; margin: 5px 0; }
+    .btn-submit {
+      display:block;
+      margin: 20px auto;
+      padding: 10px 20px;
+      border:none;
+      border-radius: 6px;
+      background:#007bff;
+      color:white;
+      cursor:pointer;
+      font-size:1rem;
+    }
+    .correct { background: #d4edda; }
+    .wrong { background: #f8d7da; }
+    .explanation { font-size:0.9rem; margin-top:5px; color:#333; }
+    #result { text-align:center; margin-top:20px; font-size:1.2rem; }
+    .badge {
+      font-size: 1.5rem;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+
+  <header class="header">
+    <div class="container nav">
+      <div class="logo"><i class="fas fa-heartbeat"></i> AarogyaLink</div>
+      <div class="nav-controls">
+        <a href="quiz.html" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Back</a>
+      </div>
+    </div>
+  </header>
+
+  <div class="quiz-container">
+    <div class="banner">
+      <img src="https://cdn-icons-png.flaticon.com/512/2966/2966489.png" alt="First Aid Icon">
+      <h2>🩺 First Aid Quiz</h2>
+    </div>
+
+    <!-- Progress bar -->
+    <div class="progress-bar">
+      <div id="progress" class="progress">0%</div>
+    </div>
+
+    <form id="quizForm"></form>
+    <button class="btn-submit" onclick="submitQuiz(event)">Submit Quiz</button>
+    <div id="result"></div>
+  </div>
+
+  <script>
+    const quizData = [
+      { question: "Q1. What should you do first if someone is bleeding heavily?",
+        options: ["Give them water", "Apply pressure on the wound", "Make them walk", "Cover them with blanket"],
+        correct: 1, explanation: "Apply direct pressure on the wound to stop bleeding." },
+      { question: "Q2. What is the emergency number in India?",
+        options: ["112", "101", "999", "100"],
+        correct: 0, explanation: "112 is the all-in-one emergency helpline number in India." },
+      { question: "Q3. If someone faints, what should you do?",
+        options: ["Give coffee", "Lay them flat and check breathing", "Leave them alone", "Make them stand"],
+        correct: 1, explanation: "Lay them flat, loosen clothing and check if they are breathing." },
+      { question: "Q4. What should you do for a minor burn?",
+        options: ["Apply toothpaste", "Cool under running water", "Cover with oil", "Rub with cloth"],
+        correct: 1, explanation: "Cool the burn under clean running water for 10–20 minutes." },
+      { question: "Q5. What should NOT be done in case of a snake bite?",
+        options: ["Keep victim calm", "Tie a tight tourniquet", "Seek medical help", "Immobilize the limb"],
+        correct: 1, explanation: "Never tie a tight tourniquet. Get medical help immediately." },
+      { question: "Q6. If someone is choking and cannot breathe or speak, what should you do?",
+        options: ["Back blows and Heimlich maneuver", "Give them water", "Lay them down", "Slap their face"],
+        correct: 0, explanation: "Perform 5 back blows and abdominal thrusts (Heimlich maneuver)." },
+      { question: "Q7. What is the first step in CPR?",
+        options: ["Check breathing and response", "Give water", "Lift legs", "Cover with blanket"],
+        correct: 0, explanation: "Always check if the person is responsive and breathing first." },
+      { question: "Q8. If a person has a nosebleed, what should you do?",
+        options: ["Tilt head back", "Tilt head forward and pinch nose", "Lie flat", "Blow nose hard"],
+        correct: 1, explanation: "Lean forward and pinch soft part of nose for 10 minutes." },
+      { question: "Q9. What should be done if someone is bitten by a dog?",
+        options: ["Wash with soap and water and see doctor", "Ignore it", "Cover with cloth only", "Give milk"],
+        correct: 0, explanation: "Wash the wound with soap and water and seek medical help for rabies vaccine." },
+      { question: "Q10. What is the best position for someone in shock?",
+        options: ["Standing", "Flat on back with legs raised", "Sitting upright", "Face down"],
+        correct: 1, explanation: "Lay them flat and raise their legs to improve blood flow." }
+    ];
+
+    const quizForm = document.getElementById("quizForm");
+    const progressBar = document.getElementById("progress");
+
+    // Render all questions
+    quizData.forEach((q, index) => {
+      const questionBlock = document.createElement("div");
+      questionBlock.classList.add("question");
+      questionBlock.innerHTML = `
+        <h4>${q.question}</h4>
+        ${q.options.map((opt, i) => `
+          <label class="option">
+            <input type="radio" name="q${index}" value="${i}" onchange="updateProgress()"> ${opt}
+          </label>
+        `).join("")}
+        <div id="exp${index}" class="explanation" style="display:none;"></div>
+      `;
+      quizForm.appendChild(questionBlock);
+    });
+
+    // Update progress bar
+    function updateProgress() {
+      const answered = quizData.filter((_, i) => document.querySelector(`input[name="q${i}"]:checked`)).length;
+      const total = quizData.length;
+      const percent = Math.round((answered/total)*100);
+      progressBar.style.width = percent + "%";
+      progressBar.textContent = percent + "%";
+    }
+
+    function submitQuiz(e) {
+      e.preventDefault();
+      let score = 0;
+      quizData.forEach((q, i) => {
+        const selected = document.querySelector(`input[name="q${i}"]:checked`);
+        const explanation = document.getElementById(`exp${i}`);
+        if (selected) {
+          if (parseInt(selected.value) === q.correct) {
+            score++;
+            selected.parentElement.classList.add("correct");
+            explanation.innerHTML = "✅ Correct! " + q.explanation;
+          } else {
+            selected.parentElement.classList.add("wrong");
+            explanation.innerHTML = "❌ Wrong! " + q.explanation;
+          }
+        } else {
+          explanation.innerHTML = "⚠️ Not Attempted. " + q.explanation;
+        }
+        explanation.style.display = "block";
+      });
+
+      // Badge system
+      let badge = "";
+      if(score >= 8) badge = "🥇 Gold Health Hero!";
+      else if(score >= 5) badge = "🥈 Silver Health Learner!";
+      else badge = "🥉 Bronze - Keep practicing!";
+
+      document.getElementById("result").innerHTML = 
+        `<strong>Your Score: ${score}/${quizData.length}</strong><br>
+         <div class="badge">${badge}</div>`;
+    }
+  </script>
+
+</body>
+</html>
